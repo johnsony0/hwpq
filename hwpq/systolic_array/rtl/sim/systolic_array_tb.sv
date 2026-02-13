@@ -156,7 +156,7 @@ module systolic_array_tb;
         i_read = 0;
         i_data = value;
         ref_queue.push_back(value);
-        ref_queue.sort() with (item > item);
+        ref_queue.rsort();
       end else begin
         $display("Enqueue: Queue full, skipping enqueue");
       end
@@ -174,7 +174,7 @@ module systolic_array_tb;
         i_wrt  = 0;
         i_read = 1;
         ref_queue.pop_front();
-        ref_queue.sort() with (item > item);
+        ref_queue.rsort();
       end else begin
         $display("Dequeue: Queue empty, skipping dequeue");
       end
@@ -193,7 +193,7 @@ module systolic_array_tb;
       i_data = value;
       ref_queue.pop_front();
       ref_queue.push_back(value);
-      ref_queue.sort() with (item > item);
+      ref_queue.rsort();
       @(posedge CLK);
       i_wrt  = 0;
       i_read = 0;
