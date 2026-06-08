@@ -2,7 +2,7 @@
 
 module systolic_array_tb;
   // Parameters matching the module under test
-  parameter int QUEUE_SIZE = 128;
+  parameter int QUEUE_SIZE = 8;
   parameter int DATA_WIDTH = 16;
 
   // Clock and reset signals

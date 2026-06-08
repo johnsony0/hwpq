@@ -67,8 +67,8 @@ module systolic_array #(
       // Replace operation
       if (i_wrt && i_read) begin
         if (full) begin
+          OB[0] <= IB[0];   // replace OB with the head of IB
           IB[0] <= i_data;  // replace the head of IB
-          OB[0] <= MIN_VALUE;  // pop the head of OB
         end else if (empty) begin
           OB[0] <= i_data;  // insert the new node at the head of OB
         end else begin
