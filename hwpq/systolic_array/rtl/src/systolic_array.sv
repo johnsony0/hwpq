@@ -20,16 +20,17 @@ module systolic_array #(
 
   // Constant
   localparam int MIN_VALUE = 0;  // Represents the minimum value for a max-queue
+  localparam int HALF_SIZE = QUEUE_SIZE / 2;
 
   // Input Buffer (IB) and Output Buffer (OB)
-  logic   [DATA_WIDTH-1:0] IB                  [  QUEUE_SIZE/2];
-  logic   [DATA_WIDTH-1:0] OB                  [  QUEUE_SIZE/2];
+  logic   [DATA_WIDTH-1:0] IB                  [HALF_SIZE];
+  logic   [DATA_WIDTH-1:0] OB                  [HALF_SIZE];
 
   // Registers to store comparison results
-  logic                    IB_greater_than_OB     [  QUEUE_SIZE/2];
-  logic                    IB_greater_than_IB_next[QUEUE_SIZE/2-1];
-  logic                    IB_greater_than_OB_next[QUEUE_SIZE/2-1];
-  logic                    OB_next_greater_than_OB[QUEUE_SIZE/2-1];
+  logic                    IB_greater_than_OB     [HALF_SIZE];
+  logic                    IB_greater_than_IB_next[HALF_SIZE-1];
+  logic                    IB_greater_than_OB_next[HALF_SIZE-1];
+  logic                    OB_next_greater_than_OB[HALF_SIZE-1];
 
   // Control signals
   int                      size;
@@ -47,11 +48,12 @@ module systolic_array #(
   always_ff @(posedge i_CLK or negedge i_RSTn) begin
     if (!i_RSTn) begin  // Reset
       size <= 0;
-      for (int i = 0; i < QUEUE_SIZE; i++) begin
+      for (int i = 0; i < HALF_SIZE; i++) begin
         IB[i] <= MIN_VALUE;  // initialize IB to MIN_VALUE, since this is a max-queue
         OB[i] <= MIN_VALUE;  // initialize OB to MIN_VALUE, since this is a max-queue
       end
     end else begin
+
       // Dequeue operation
       if (i_read && !i_wrt && !empty) begin
         OB[0] <= MIN_VALUE;  // pop the head of OB
@@ -79,27 +81,27 @@ module systolic_array #(
       size <= size_next;
 
       // Sorting logic
-      for (int i = 0; i < QUEUE_SIZE; i++) begin  // Iterate through each element
+      for (int i = 0; i < HALF_SIZE; i++) begin  // Iterate through each element
         priority case (1'b1)
           IB_greater_than_OB[i]: begin
             IB[i] <= OB[i];
             OB[i] <= IB[i];
           end
 
-          (i != QUEUE_SIZE - 1) && OB_next_greater_than_OB[i]: begin  // OB[i+1] > OB[i]
+          OB_next_greater_than_OB[i] && (!(OB_next_greater_than_OB[i+1]) || i == HALF_SIZE - 2) && (!(IB_greater_than_OB[i+1])): begin  // OB[i+1] > OB[i]
             // Swap OB[i] and OB[i+1]
             OB[i+1] <= OB[i];
             OB[i]   <= OB[i+1];
           end
 
-          (i != QUEUE_SIZE - 1) && IB_greater_than_OB_next[i] && (IB[i+1] == MIN_VALUE): begin
+          IB_greater_than_OB_next[i] && (IB[i+1] == MIN_VALUE): begin
             // Move IB[i] to OB[i+1], and move OB[i+1] to IB[i+1]
             OB[i+1] <= IB[i];
             IB[i+1] <= OB[i+1];
             IB[i]   <= MIN_VALUE;
           end
 
-          (i != QUEUE_SIZE - 1) && IB_greater_than_IB_next[i]: begin  // IB[i] > IB[i+1]
+          IB_greater_than_IB_next[i] && !(IB_greater_than_IB_next[i+1] || i == HALF_SIZE - 2) && (!(IB_greater_than_OB[i+1])): begin  // IB[i] > IB[i+1]
             // Swap IB[i] and IB[i+1]
             IB[i+1] <= IB[i];
             IB[i]   <= IB[i+1];
