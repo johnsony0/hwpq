@@ -56,7 +56,7 @@ jobs:
       - name: Ensure environment tools are ready
         run: |
           if ! command -v iverilog &> /dev/null; then
-            apt-get update && apt-get install -y iverilog vvp grep
+            apt-get update && apt-get install -y iverilog grep
           fi
           iverilog -V | head -n 1
 
