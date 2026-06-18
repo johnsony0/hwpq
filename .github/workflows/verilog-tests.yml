@@ -10,6 +10,9 @@ jobs:
   simulate:
     name: ${{ matrix.module }}
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/${{ github.repository }}:latest
+      options: --user root
     strategy:
       fail-fast: false
       matrix:
@@ -50,10 +53,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Icarus Verilog
+      - name: Ensure environment tools are ready
         run: |
-          sudo apt-get update
-          sudo apt-get install -y iverilog
+          if ! command -v iverilog &> /dev/null; then
+            apt-get update && apt-get install -y iverilog vvp grep
+          fi
           iverilog -V | head -n 1
 
       - name: Run ${{ matrix.module }} testbench
