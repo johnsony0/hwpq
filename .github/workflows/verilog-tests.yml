@@ -34,7 +34,7 @@ jobs:
             top: register_tree_pipelined_tb
 
           - module: systolic_array
-            tbs: hwpq/systolic_array/rtl/sim/systolic_array_tb.sv
+            tb: hwpq/systolic_array/rtl/sim/systolic_array_tb.sv
             tops: systolic_array_tb
           
           - module: "[Bug Test] systolic_array" 
