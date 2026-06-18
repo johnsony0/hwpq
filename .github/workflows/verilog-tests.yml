@@ -35,7 +35,7 @@ jobs:
 
           - module: systolic_array
             tb: hwpq/systolic_array/rtl/sim/systolic_array_tb.sv
-            tops: systolic_array_tb
+            top: systolic_array_tb
           
           - module: "[Bug Test] systolic_array" 
             module_dir: systolic_array  
