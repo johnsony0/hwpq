@@ -19,6 +19,8 @@ module systolic_array_tb;
 
   // Reference array for verification
   logic [DATA_WIDTH-1:0] ref_queue        [$:QUEUE_SIZE-1];
+  int                    ref_size = 0;
+  logic [DATA_WIDTH-1:0] tmp;
 
   // Test variables
   logic [DATA_WIDTH-1:0] random_value;
@@ -64,15 +66,18 @@ module systolic_array_tb;
     // Test Case 1: Successive decreasing numbers in IB
     $display("\nTest Case 1: Successive decreasing numbers in IB");
     ref_queue.delete();
-    force u_SystolicArray.IB = '{16'd1, 16'd6, 16'd4, 16'd2};
-    force u_SystolicArray.OB = '{16'd12, 16'd11, 16'd10, 16'd9}; 
-    force u_SystolicArray.size = 4'd8;
+    u_SystolicArray.IB[0] = 16'd1;
+    u_SystolicArray.IB[1] = 16'd6;
+    u_SystolicArray.IB[2] = 16'd4;
+    u_SystolicArray.IB[3] = 16'd2;
+    u_SystolicArray.OB[0] = 16'd12;
+    u_SystolicArray.OB[1] = 16'd11;
+    u_SystolicArray.OB[2] = 16'd10;
+    u_SystolicArray.OB[3] = 16'd9;
+    u_SystolicArray.size = 4'd8;
+    u_SystolicArray.size_next = 4'd8;
 
     @(posedge CLK);
-
-    release u_SystolicArray.IB;
-    release u_SystolicArray.OB;
-    release u_SystolicArray.size;
 
     ref_queue.push_back(16'd1);
     ref_queue.push_back(16'd6);
@@ -82,8 +87,16 @@ module systolic_array_tb;
     ref_queue.push_back(16'd11);
     ref_queue.push_back(16'd10);
     ref_queue.push_back(16'd9);
-
-    ref_queue.rsort();
+    ref_size = 8;
+    for (int i = 0; i < ref_size; i++) begin
+      for (int j = i + 1; j < ref_size; j++) begin
+        if (ref_queue[i] < ref_queue[j]) begin
+          tmp = ref_queue[i];
+          ref_queue[i] = ref_queue[j];
+          ref_queue[j] = tmp;
+        end
+      end
+    end
     repeat (10) @(posedge CLK);
 
     for (int i = 0; i < 8; i++) begin
@@ -100,15 +113,19 @@ module systolic_array_tb;
     // Test Case 2: Successive decreasing numbers in IB
     $display("\nTest Case 2: Successive increasing numbers in OB");
     ref_queue.delete();
-    force u_SystolicArray.IB = '{16'd1, 16'd2, 16'd4, 16'd6};
-    force u_SystolicArray.OB = '{16'd12, 16'd9, 16'd10, 16'd11}; 
-    force u_SystolicArray.size = 4'd8;
+
+    u_SystolicArray.IB[0] = 16'd1;
+    u_SystolicArray.IB[1] = 16'd2;
+    u_SystolicArray.IB[2] = 16'd4;
+    u_SystolicArray.IB[3] = 16'd6;
+    u_SystolicArray.OB[0] = 16'd12;
+    u_SystolicArray.OB[1] = 16'd9;
+    u_SystolicArray.OB[2] = 16'd10;
+    u_SystolicArray.OB[3] = 16'd11;
+    u_SystolicArray.size = 4'd8;
+    u_SystolicArray.size_next = 4'd8;
 
     @(posedge CLK);
-
-    release u_SystolicArray.IB;
-    release u_SystolicArray.OB;
-    release u_SystolicArray.size;
 
     ref_queue.push_back(16'd1);
     ref_queue.push_back(16'd6);
@@ -119,7 +136,16 @@ module systolic_array_tb;
     ref_queue.push_back(16'd10);
     ref_queue.push_back(16'd9);
 
-    ref_queue.rsort();
+    ref_size = 8;
+    for (int i = 0; i < ref_size; i++) begin
+      for (int j = i + 1; j < ref_size; j++) begin
+        if (ref_queue[i] < ref_queue[j]) begin
+          tmp = ref_queue[i];
+          ref_queue[i] = ref_queue[j];
+          ref_queue[j] = tmp;
+        end
+      end
+    end
     repeat (10) @(posedge CLK);
 
     for (int i = 0; i < 8; i++) begin
@@ -136,15 +162,18 @@ module systolic_array_tb;
     // Test Case 3: Successive decreasing numbers from IB to OB+1
     $display("\nTest Case 3: Successive decreasing numbers from IB to OB+1");
     ref_queue.delete();
-    force u_SystolicArray.IB = '{16'd1, 16'd2, 16'd11, 16'd10};
-    force u_SystolicArray.OB = '{16'd17, 16'd16, 16'd15, 16'd9}; 
-    force u_SystolicArray.size = 4'd8;
+    u_SystolicArray.IB[0] = 16'd1;
+    u_SystolicArray.IB[1] = 16'd2;
+    u_SystolicArray.IB[2] = 16'd11;
+    u_SystolicArray.IB[3] = 16'd10;
+    u_SystolicArray.OB[0] = 16'd17;
+    u_SystolicArray.OB[1] = 16'd16;
+    u_SystolicArray.OB[2] = 16'd15;
+    u_SystolicArray.OB[3] = 16'd9;
+    u_SystolicArray.size = 4'd8;
+    u_SystolicArray.size_next = 4'd8;
 
     @(posedge CLK);
-
-    release u_SystolicArray.IB;
-    release u_SystolicArray.OB;
-    release u_SystolicArray.size;
 
     ref_queue.push_back(16'd1);
     ref_queue.push_back(16'd2);
@@ -155,7 +184,16 @@ module systolic_array_tb;
     ref_queue.push_back(16'd15);
     ref_queue.push_back(16'd9);
 
-    ref_queue.rsort();
+    ref_size = 8;
+    for (int i = 0; i < ref_size; i++) begin
+      for (int j = i + 1; j < ref_size; j++) begin
+        if (ref_queue[i] < ref_queue[j]) begin
+          tmp = ref_queue[i];
+          ref_queue[i] = ref_queue[j];
+          ref_queue[j] = tmp;
+        end
+      end
+    end
     repeat (10) @(posedge CLK);
 
     for (int i = 0; i < 8; i++) begin
@@ -172,15 +210,19 @@ module systolic_array_tb;
     // Test Case 4: Successive increasing numbers in OB to IB+1
     $display("\nTest Case 4: Successive decreasing numbers from OB to IB+1");
     ref_queue.delete();
-    force u_SystolicArray.IB = '{16'd1, 16'd2, 16'd7, 16'd13};
-    force u_SystolicArray.OB = '{16'd17, 16'd16, 16'd10, 16'd11}; 
-    force u_SystolicArray.size = 4'd8;
+    
+    u_SystolicArray.IB[0] = 16'd1;
+    u_SystolicArray.IB[1] = 16'd2;
+    u_SystolicArray.IB[2] = 16'd7;
+    u_SystolicArray.IB[3] = 16'd13;
+    u_SystolicArray.OB[0] = 16'd17;
+    u_SystolicArray.OB[1] = 16'd16;
+    u_SystolicArray.OB[2] = 16'd10;
+    u_SystolicArray.OB[3] = 16'd11;
+    u_SystolicArray.size = 4'd8;
+    u_SystolicArray.size_next = 4'd8;
 
     @(posedge CLK);
-
-    release u_SystolicArray.IB;
-    release u_SystolicArray.OB;
-    release u_SystolicArray.size;
 
     ref_queue.push_back(16'd1);
     ref_queue.push_back(16'd2);
@@ -191,7 +233,16 @@ module systolic_array_tb;
     ref_queue.push_back(16'd10);
     ref_queue.push_back(16'd11);
 
-    ref_queue.rsort();
+    ref_size = 8;
+    for (int i = 0; i < ref_size; i++) begin
+      for (int j = i + 1; j < ref_size; j++) begin
+        if (ref_queue[i] < ref_queue[j]) begin
+          tmp = ref_queue[i];
+          ref_queue[i] = ref_queue[j];
+          ref_queue[j] = tmp;
+        end
+      end
+    end
     repeat (10) @(posedge CLK);
 
     for (int i = 0; i < 8; i++) begin
@@ -209,34 +260,18 @@ module systolic_array_tb;
     $finish;
   end
 
-
-  // Task to write to the end of the queue
-  task automatic enqueue(input logic [DATA_WIDTH-1:0] value);
-    begin
-      if (!o_full) begin
-        i_wrt  = 1;
-        i_read = 0;
-        i_data = value;
-        ref_queue.push_back(value);
-        ref_queue.rsort();
-      end else begin
-        $display("Enqueue: Queue full, skipping enqueue");
-      end
-      @(posedge CLK);
-      i_wrt  = 0;
-      i_read = 0;
-      repeat (2) @(posedge CLK);
-    end
-  endtask
-
   // Task to read root node
   task automatic dequeue();
     begin
       if (!o_empty) begin
         i_wrt  = 0;
         i_read = 1;
-        ref_queue.pop_front();
-        ref_queue.rsort();
+        for (int i = 0; i < ref_size - 1; i++) begin
+          ref_queue[i] = ref_queue[i+1];
+        end
+        ref_queue[ref_size-1] = '0; 
+        ref_size--;
+        
       end else begin
         $display("Dequeue: Queue empty, skipping dequeue");
       end
@@ -249,17 +284,30 @@ module systolic_array_tb;
 
   // Task to replace root node
   task automatic replace(input logic [DATA_WIDTH-1:0] value);
+    logic [DATA_WIDTH-1:0] tmp;
     begin
-      i_wrt  = 1;
-      i_read = 1;
-      i_data = value;
-      ref_queue.pop_front();
-      ref_queue.push_back(value);
-      ref_queue.rsort();
+      if (ref_size > 0) begin
+        i_wrt  = 1;
+        i_read = 1;
+        i_data = value;
+        ref_queue[0] = value;
+        for (int i = 0; i < ref_size; i++) begin
+          for (int j = i + 1; j < ref_size; j++) begin
+            if (ref_queue[i] < ref_queue[j]) begin
+              tmp = ref_queue[i];
+              ref_queue[i] = ref_queue[j];
+              ref_queue[j] = tmp;
+            end
+          end
+        end
+      end else begin
+        $display("Replace: Queue empty, skipping replace");
+      end
+      
       @(posedge CLK);
       i_wrt  = 0;
       i_read = 0;
-      repeat (2) @(posedge CLK);
+      repeat (2) @(posedge CLK); 
     end
   endtask
 
