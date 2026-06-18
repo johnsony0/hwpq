@@ -70,27 +70,30 @@ module register_tree_pipelined #(
   always_comb begin : calcualte_swap_result
     case (even_cycle_flag)
       1'b1: begin  // Even cycle
-        swap_result = queue;  // Initialize swap_result with current queue
+        for (int i = 0; i < NODES_NEEDED; i++) begin
+          swap_result[i] = queue[i];
+        end
+        
         for (int lvl = 0; lvl < TREE_DEPTH; lvl++) begin  // Iterate through levels
           if (lvl % 2 == 0 && lvl < TREE_DEPTH - 1) begin  // Process only even levels (0, 2, 4...)
-            for (
-                int i = (1 << lvl) - 1; i < (1 << (lvl + 1)) - 1; i++
-            ) begin  // Iterate through nodes at this level
-              if (queue[2*i+1] > queue[2*i+2]) begin // compare left and right children, if left > right
-                if (queue[2*i+1] > queue[i]) begin  // compare with parent, if left > parent
-                  swap_result[i] = queue[2*i+1];
-                  swap_result[2*i+1] = queue[i];
-                end else begin
-                  swap_result[i] = queue[i];
-                  swap_result[2*i+1] = queue[2*i+1];
-                end
-              end else begin  // if right > left
-                if (queue[2*i+2] > queue[i]) begin  // compare with parent, if right > parent
-                  swap_result[i] = queue[2*i+2];
-                  swap_result[2*i+2] = queue[i];
-                end else begin
-                  swap_result[i] = queue[i];
-                  swap_result[2*i+2] = queue[2*i+2];
+            for (int i = 0; i < NODES_NEEDED; i++) begin  // Iterate through nodes at this level
+              if (i >= ((1 << lvl) - 1) && i < ((1 << (lvl + 1)) - 1)) begin 
+                if (queue[2*i+1] > queue[2*i+2]) begin // compare left and right children, if left > right
+                  if (queue[2*i+1] > queue[i]) begin  // compare with parent, if left > parent
+                    swap_result[i] = queue[2*i+1];
+                    swap_result[2*i+1] = queue[i];
+                  end else begin
+                    swap_result[i] = queue[i];
+                    swap_result[2*i+1] = queue[2*i+1];
+                  end
+                end else begin  // if right > left
+                  if (queue[2*i+2] > queue[i]) begin  // compare with parent, if right > parent
+                    swap_result[i] = queue[2*i+2];
+                    swap_result[2*i+2] = queue[i];
+                  end else begin
+                    swap_result[i] = queue[i];
+                    swap_result[2*i+2] = queue[2*i+2];
+                  end
                 end
               end
             end
@@ -101,27 +104,30 @@ module register_tree_pipelined #(
       end
 
       1'b0: begin  // Odd cycle
-        swap_result = queue;  // Initialize swap_result with current queue
+        // Initialize swap_result with current queue
+        for (int i = 0; i < NODES_NEEDED; i++) begin
+          swap_result[i] = queue[i];
+        end
         for (int lvl = 0; lvl < TREE_DEPTH; lvl++) begin  // Iterate through levels
           if (lvl % 2 == 1 && lvl < TREE_DEPTH - 1) begin  // Process only odd levels (1, 3, 5...)
-            for (
-                int i = (1 << lvl) - 1; i < (1 << (lvl + 1)) - 1; i++
-            ) begin  // Iterate through nodes at this level
-              if (queue[2*i+1] > queue[2*i+2]) begin // compare left and right children, if left > right
-                if (queue[2*i+1] > queue[i]) begin  // compare with parent, if left > parent
-                  swap_result[i] = queue[2*i+1];
-                  swap_result[2*i+1] = queue[i];
-                end else begin
-                  swap_result[i] = queue[i];
-                  swap_result[2*i+1] = queue[2*i+1];
-                end
-              end else begin  // if right > left
-                if (queue[2*i+2] > queue[i]) begin  // compare with parent, if right > parent
-                  swap_result[i] = queue[2*i+2];
-                  swap_result[2*i+2] = queue[i];
-                end else begin
-                  swap_result[i] = queue[i];
-                  swap_result[2*i+2] = queue[2*i+2];
+            for (int i = 0; i < NODES_NEEDED; i++) begin  // Iterate through nodes at this level
+              if (i >= ((1 << lvl) - 1) && i < ((1 << (lvl + 1)) - 1)) begin 
+                if (queue[2*i+1] > queue[2*i+2]) begin // compare left and right children, if left > right
+                  if (queue[2*i+1] > queue[i]) begin  // compare with parent, if left > parent
+                    swap_result[i] = queue[2*i+1];
+                    swap_result[2*i+1] = queue[i];
+                  end else begin
+                    swap_result[i] = queue[i];
+                    swap_result[2*i+1] = queue[2*i+1];
+                  end
+                end else begin  // if right > left
+                  if (queue[2*i+2] > queue[i]) begin  // compare with parent, if right > parent
+                    swap_result[i] = queue[2*i+2];
+                    swap_result[2*i+2] = queue[i];
+                  end else begin
+                    swap_result[i] = queue[i];
+                    swap_result[2*i+2] = queue[2*i+2];
+                  end
                 end
               end
             end
@@ -132,7 +138,9 @@ module register_tree_pipelined #(
       end
 
       default: begin
-        swap_result = queue;
+        for (int i = 0; i < NODES_NEEDED; i++) begin
+          swap_result[i] = queue[i];
+        end
       end
     endcase
   end
@@ -154,18 +162,28 @@ module register_tree_pipelined #(
         for (int i = (1 << (TREE_DEPTH - 1)) - 1; i < (1 << (TREE_DEPTH)) - 1; i++) begin
           found_empty_index = (queue[i] == '0) ? i : found_empty_index;
         end
-        next_queue = queue;
+        for (int i = 0; i < NODES_NEEDED; i++) begin
+          next_queue[i] = queue[i];
+        end
         next_queue[found_empty_index] = i_data;
       end
       3'b010: begin  // Dequeue
-        next_queue = queue;
+        for (int i = 0; i < NODES_NEEDED; i++) begin
+          next_queue[i] = queue[i];
+        end
         next_queue[0] = '0;
       end
       3'b001: begin  // Replace
-        next_queue = queue;
+        for (int i = 0; i < NODES_NEEDED; i++) begin
+          next_queue[i] = queue[i];
+        end
         next_queue[0] = i_data;
       end
-      default: next_queue = swap_result;
+      default: begin
+        for (int i = 0; i < NODES_NEEDED; i++) begin
+          next_queue[i] = swap_result[i];
+        end
+      end
     endcase
   end
 
@@ -182,11 +200,15 @@ module register_tree_pipelined #(
 
   always_ff @(posedge i_CLK or negedge i_RSTn) begin : update_registers
     if (!i_RSTn) begin
-      queue           <= reset_queue;
+      for (int i = 0; i < NODES_NEEDED; i++) begin
+        queue[i] <= reset_queue[i];
+      end
       size            <= 0;
       even_cycle_flag <= 1'b1;
     end else begin
-      queue           <= next_queue;
+      for (int i = 0; i < NODES_NEEDED; i++) begin
+        queue[i] <= next_queue[i];
+      end
       size            <= next_size;
       even_cycle_flag <= next_even_cycle_flag;
     end

@@ -22,7 +22,7 @@ module bram_tree #(
   localparam integer NODES_NEEDED = (1 << TREE_DEPTH) - 1;  // number of actual slots needed for the queue
                                                             // to store the heap, need to caculate this so
                                                             // that we could take any arbitrary queue size
-  localparam integer ADDRESS_WIDTH = TREE_DEPTH - 1;  // address width of the BRAMs
+  localparam integer ADDRESS_WIDTH = $clog2(NODES_NEEDED)-1;  // address width of the BRAMs
 
   //-------------------------------------------------------------------------
   // Internal used wires and registers
@@ -34,8 +34,8 @@ module bram_tree #(
   logic [DATA_WIDTH-1:0] next_level_1[2];
 
   // Memory used wires and registers
-  logic [ADDRESS_WIDTH-1:0] addr_a[2:TREE_DEPTH-1];
-  logic [ADDRESS_WIDTH-1:0] addr_b[2:TREE_DEPTH-1];
+  logic [ADDRESS_WIDTH:0] addr_a[2:TREE_DEPTH-1];
+  logic [ADDRESS_WIDTH:0] addr_b[2:TREE_DEPTH-1];
   logic [DATA_WIDTH-1:0] dout_a[2:TREE_DEPTH-1];
   logic [DATA_WIDTH-1:0] dout_b[2:TREE_DEPTH-1];
   logic [DATA_WIDTH-1:0] din_a[2:TREE_DEPTH-1];
@@ -43,8 +43,8 @@ module bram_tree #(
   logic we_a[2:TREE_DEPTH-1];
   logic we_b[2:TREE_DEPTH-1];
 
-  logic [ADDRESS_WIDTH-1:0] next_addr_a[2:TREE_DEPTH-1];
-  logic [ADDRESS_WIDTH-1:0] next_addr_b[2:TREE_DEPTH-1];
+  logic [ADDRESS_WIDTH:0] next_addr_a[2:TREE_DEPTH-1];
+  logic [ADDRESS_WIDTH:0] next_addr_b[2:TREE_DEPTH-1];
   logic [DATA_WIDTH-1:0] next_din_a[2:TREE_DEPTH-1];
   logic [DATA_WIDTH-1:0] next_din_b[2:TREE_DEPTH-1];
   logic next_we_a[2:TREE_DEPTH-1];
@@ -95,7 +95,7 @@ module bram_tree #(
     for (i = 2; i < TREE_DEPTH; i++) begin : gen_bram  // Using BRAM starts from level 2
       rams_tdp_rf_rf #(
           .WIDTH(DATA_WIDTH),
-          .DEPTH((1 << i))
+          .DEPTH(NODES_NEEDED)
       ) bram_inst (
           .clka (CLK),
           .ena  (1'b1),

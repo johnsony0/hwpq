@@ -18,7 +18,9 @@ module bram_tree_tb;
   logic   [DataWidth-1:0] o_data;
 
   // Reference array for verification
-  logic   [DataWidth-1:0] ref_queue        [$:QueueSize-1];
+  logic [DataWidth-1:0] ref_queue        [$:QueueSize-1];
+  int                    ref_size = 0;
+  logic [DataWidth-1:0] tmp;
 
   // Test variables
   integer                 i;
@@ -32,7 +34,7 @@ module bram_tree_tb;
   } operation_t;
 
   // Instantiate the register_tree module
-  bram_tree #(
+  pipelined_bram_tree #(
       .QUEUE_SIZE(QueueSize),
       .DATA_WIDTH(DataWidth)
   ) uut (
@@ -64,10 +66,23 @@ module bram_tree_tb;
 
     // Initialize the reference queue, sort the reference queue, and write to the queue
     for (i = 0; i < QueueSize; i++) begin
+      
       random_value = DataWidth'(($urandom & ((1 << DataWidth) - 1)) % 1025);
-      ref_queue.push_back(random_value);
+      ref_queue[ref_size] = random_value;
+      ref_size++;
+      
+      for (int i = 0; i < ref_size; i++) begin
+        for (int j = i + 1; j < ref_size; j++) begin
+          if (ref_queue[i] < ref_queue[j]) begin
+            tmp = ref_queue[i];
+            ref_queue[i] = ref_queue[j];
+            ref_queue[j] = tmp;
+          end
+        end
+      end
     end
-    ref_queue.rsort();
+
+
     for (i = 0; i < QueueSize; i++) begin
       if (i == 0) begin
         uut.next_level_0 = ref_queue[0];
@@ -142,7 +157,7 @@ module bram_tree_tb;
       end
     end
     uut.next_queue_size = QueueSize;
-    uut.next_state = 0;
+    uut.next_state = uut.IDLE;
 
     repeat (16) @(posedge CLK);
 
@@ -161,10 +176,23 @@ module bram_tree_tb;
     end
 
     for (i = 0; i < QueueSize; i++) begin
+      
       random_value = DataWidth'(($urandom & ((1 << DataWidth) - 1)) % 1025);
-      ref_queue.push_back(random_value);
+      ref_queue[ref_size] = random_value;
+      ref_size++;
+      
+      for (int i = 0; i < ref_size; i++) begin
+        for (int j = i + 1; j < ref_size; j++) begin
+          if (ref_queue[i] < ref_queue[j]) begin
+            tmp = ref_queue[i];
+            ref_queue[i] = ref_queue[j];
+            ref_queue[j] = tmp;
+          end
+        end
+      end
     end
-    ref_queue.rsort();
+
+
     for (i = 0; i < QueueSize; i++) begin
       if (i == 0) begin
         uut.next_level_0 = ref_queue[0];
@@ -239,7 +267,7 @@ module bram_tree_tb;
       end
     end
     uut.next_queue_size = QueueSize;
-    uut.next_state = 0;
+    uut.next_state = uut.IDLE;
 
     repeat (16) @(posedge CLK);
 
@@ -295,8 +323,12 @@ module bram_tree_tb;
       if (!o_empty) begin
         i_wrt  = 0;
         i_read = 1;
-        ref_queue.pop_front();
-        ref_queue.rsort();
+        for (int i = 0; i < ref_size - 1; i++) begin
+          ref_queue[i] = ref_queue[i+1];
+        end
+        ref_queue[ref_size-1] = '0; 
+        ref_size--;
+        
       end else begin
         $display("Dequeue: Queue empty, skipping dequeue");
       end
@@ -309,17 +341,30 @@ module bram_tree_tb;
 
   // Task to replace root node
   task automatic replace(input logic [DataWidth-1:0] value);
+    logic [DataWidth-1:0] tmp;
     begin
-      i_wrt  = 1;
-      i_read = 1;
-      i_data = value;
-      ref_queue.pop_front();
-      ref_queue.push_back(value);
-      ref_queue.rsort();
+      if (ref_size > 0) begin
+        i_wrt  = 1;
+        i_read = 1;
+        i_data = value;
+        ref_queue[0] = value;
+        for (int i = 0; i < ref_size; i++) begin
+          for (int j = i + 1; j < ref_size; j++) begin
+            if (ref_queue[i] < ref_queue[j]) begin
+              tmp = ref_queue[i];
+              ref_queue[i] = ref_queue[j];
+              ref_queue[j] = tmp;
+            end
+          end
+        end
+      end else begin
+        $display("Replace: Queue empty, skipping replace");
+      end
+      
       @(posedge CLK);
       i_wrt  = 0;
       i_read = 0;
-      repeat (24) @(posedge CLK);
+      repeat (24) @(posedge CLK); 
     end
   endtask
 

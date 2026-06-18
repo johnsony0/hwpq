@@ -50,6 +50,16 @@ module register_tree #(
   logic [$clog2(NODES_NEEDED)-1:0] size_after_deq;
   logic [$clog2(NODES_NEEDED)-1:0] size_after_rep;
 
+  logic [DATA_WIDTH-1:0] even_phase_queue[NODES_NEEDED];
+  logic [DATA_WIDTH-1:0] final_swap_result[NODES_NEEDED];
+  logic [DATA_WIDTH-1:0] parent, left_child, right_child;
+
+  logic left_greater_than_right;
+  logic parent_less_than_left;
+  logic parent_less_than_right;
+  logic [DATA_WIDTH-1:0] new_parent, new_left, new_right;
+
+
   //----------------------------------------------------------------------
   // Initialize reset_queue to zeros
   //----------------------------------------------------------------------
@@ -77,27 +87,23 @@ module register_tree #(
   // Compare and Swap operation
   //----------------------------------------------------------------------
   always_comb begin : prepare_swap_result
-    automatic logic [DATA_WIDTH-1:0] even_phase_queue[NODES_NEEDED];
-    automatic logic [DATA_WIDTH-1:0] final_swap_result[NODES_NEEDED];
-
-    even_phase_queue = queue;
+    for (int i = 0; i < NODES_NEEDED; i++) begin
+      even_phase_queue[i] = queue[i];
+    end
     
     // Process even levels first
     for (int lvl = 0; lvl < TREE_DEPTH; lvl++) begin
       if (lvl % 2 == 0 && lvl < TREE_DEPTH - 1) begin
-        for (int i = (1 << lvl) - 1; i < (1 << (lvl + 1)) - 1; i++) begin
+        for (int i = 0; i < NODES_NEEDED; i++) begin
           // Get parent and children
-          automatic logic [DATA_WIDTH-1:0] parent = even_phase_queue[i];
-          automatic logic [DATA_WIDTH-1:0] left_child = (2*i+1 < NODES_NEEDED) ? even_phase_queue[2*i+1] : '0;
-          automatic logic [DATA_WIDTH-1:0] right_child = (2*i+2 < NODES_NEEDED) ? even_phase_queue[2*i+2] : '0;
+          parent = even_phase_queue[i];
+          left_child = (2*i+1 < NODES_NEEDED) ? even_phase_queue[2*i+1] : '0;
+          right_child = (2*i+2 < NODES_NEEDED) ? even_phase_queue[2*i+2] : '0;
           
           // Compare logic
-          automatic logic left_greater_than_right = (left_child > right_child);
-          automatic logic parent_less_than_left = (parent < left_child);
-          automatic logic parent_less_than_right = (parent < right_child);
-          
-          // Determine new values
-          logic [DATA_WIDTH-1:0] new_parent, new_left, new_right;
+          left_greater_than_right = (left_child > right_child);
+          parent_less_than_left = (parent < left_child);
+          parent_less_than_right = (parent < right_child);
           
           if (left_greater_than_right && parent_less_than_left) begin
             new_parent = left_child;
@@ -137,24 +143,23 @@ module register_tree #(
       end
     end
 
-    final_swap_result = even_phase_queue;
+    for (int i = 0; i < NODES_NEEDED; i++) begin
+      final_swap_result[i] = even_phase_queue[i];
+    end
     
     // Process odd levels
     for (int lvl = 0; lvl < TREE_DEPTH; lvl++) begin
       if (lvl % 2 == 1 && lvl < TREE_DEPTH - 1) begin
-        for (int i = (1 << lvl) - 1; i < (1 << (lvl + 1)) - 1; i++) begin
+        for (int i = 0; i < NODES_NEEDED; i++) begin
           // Get parent and children
-          automatic logic [DATA_WIDTH-1:0] parent = final_swap_result[i];
-          automatic logic [DATA_WIDTH-1:0] left_child = (2*i+1 < NODES_NEEDED) ? final_swap_result[2*i+1] : '0;
-          automatic logic [DATA_WIDTH-1:0] right_child = (2*i+2 < NODES_NEEDED) ? final_swap_result[2*i+2] : '0;
+          parent = final_swap_result[i];
+          left_child = (2*i+1 < NODES_NEEDED) ? final_swap_result[2*i+1] : '0;
+          right_child = (2*i+2 < NODES_NEEDED) ? final_swap_result[2*i+2] : '0;
           
           // Compare logic
-          automatic logic left_greater_than_right = (left_child > right_child);
-          automatic logic parent_less_than_left = (parent < left_child);
-          automatic logic parent_less_than_right = (parent < right_child);
-          
-          // Determine new values
-          logic [DATA_WIDTH-1:0] new_parent, new_left, new_right;
+          left_greater_than_right = (left_child > right_child);
+          parent_less_than_left = (parent < left_child);
+          parent_less_than_right = (parent < right_child);
           
           if (left_greater_than_right && parent_less_than_left) begin
             new_parent = left_child;
@@ -195,7 +200,9 @@ module register_tree #(
     end
     
     // Store the final swap result
-    swap_result = final_swap_result;
+    for (int i = 0; i < NODES_NEEDED; i++) begin
+      swap_result[i] = final_swap_result[i];
+    end
     size_after_swap = size; // Swap doesn't change the size
   end
 
@@ -204,7 +211,7 @@ module register_tree #(
   //----------------------------------------------------------------------
   always_comb begin : prepare_enq_result
     // Find first empty slot
-    automatic logic [$clog2(NODES_NEEDED)-1:0] found_empty_idx;
+    logic [$clog2(NODES_NEEDED)-1:0] found_empty_idx;
     found_empty_idx = NODES_NEEDED;
     
     for (int i = NODES_NEEDED-1; i >= 0; i--) begin
@@ -216,7 +223,9 @@ module register_tree #(
     end
     
     // Create enqueue result
-    enq_result = queue;
+    for (int i = 0; i < NODES_NEEDED; i++) begin
+      enq_result[i] = queue[i];
+    end
     
     if (found_empty_idx < NODES_NEEDED) begin
       enq_result[found_empty_idx] = i_data;
@@ -233,7 +242,9 @@ module register_tree #(
   //----------------------------------------------------------------------
   always_comb begin : prepare_deq_result
     // Create dequeue result - remove root
-    deq_result = queue;
+    for (int i = 0; i < NODES_NEEDED; i++) begin
+      deq_result[i] = queue[i];
+    end
     deq_result[0] = '0;
     
     // Update size after dequeue
@@ -245,7 +256,9 @@ module register_tree #(
   //----------------------------------------------------------------------
   always_comb begin : prepare_rep_result
     // Create replace result - replace root
-    rep_result = queue;
+    for (int i = 0; i < NODES_NEEDED; i++) begin
+      rep_result[i] = queue[i];
+    end
     rep_result[0] = i_data;
     
     // Update size after replace
@@ -258,25 +271,35 @@ module register_tree #(
   always_ff @(posedge i_CLK or negedge i_RSTn) begin : update_registers
     if (!i_RSTn) begin
       // Reset condition
-      queue <= reset_queue;
+      for (int i = 0; i < NODES_NEEDED; i++) begin
+        queue[i] <= reset_queue[i];
+      end
       size <= '0;
     end else begin
       // Normal operation - select based on control inputs
       if (enqueue) begin
         // Enqueue operation
-        queue <= enq_result;
+        for (int i = 0; i < NODES_NEEDED; i++) begin
+          queue[i] <= enq_result[i];
+        end
         size <= size_after_enq;
       end else if (dequeue) begin
         // Dequeue operation
-        queue <= deq_result;
+        for (int i = 0; i < NODES_NEEDED; i++) begin
+          queue[i] <= deq_result[i];
+        end
         size <= size_after_deq;
       end else if (replace) begin
         // Replace operation
-        queue <= rep_result;
+        for (int i = 0; i < NODES_NEEDED; i++) begin
+          queue[i] <= rep_result[i];
+        end
         size <= size_after_rep;
       end else begin
         // Compare and swap for heap maintenance
-        queue <= swap_result;
+        for (int i = 0; i < NODES_NEEDED; i++) begin
+          queue[i] <= swap_result[i];
+        end
         size <= size_after_swap;
       end
     end
