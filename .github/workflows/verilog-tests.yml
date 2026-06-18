@@ -1,0 +1,70 @@
+name: Verilog Module Tests
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  simulate:
+    name: ${{ matrix.module }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - module: register_array
+            tb: "hwpq/register_array/rtl/sim/register_array_tb.sv"
+            top: register_array_tb
+
+          - module: register_array_pipelined
+            tb: "hwpq/register_array_pipelined/rtl/sim/register_array_pipelined_tb.sv"
+            top: register_array_pipelined_tb
+
+          - module: register_tree
+            tb: "hwpq/register_tree/rtl/sim/register_tree_tb.sv"
+            top: register_tree_tb
+
+          - module: register_tree_pipelined
+            tb: "hwpq/register_tree_pipelined/rtl/sim/register_tree_pipelined_tb.sv"
+            top: register_tree_pipelined_tb
+
+          - module: systolic_array
+            tb: "hwpq/systolic_array/rtl/sim/systolic_array_tb.sv"
+            top: systolic_array_tb
+
+          - module: bram_tree
+            tb: "hwpq/bram_tree/rtl/sim/bram_tree_tb.sv"
+            top: bram_tree_tb
+
+          - module: bram_tree_pipelined
+            tb: "hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv"
+            top: bram_tree_tb
+
+          - module: hybrid_tree
+            tb: "hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv"
+            top: hybrid_tree_tb
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Icarus Verilog
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y iverilog
+          iverilog -V | head -n 1
+
+      - name: Run ${{ matrix.module }} testbench
+        run: |
+          chmod +x scripts/run_sim.sh
+          scripts/run_sim.sh "${{ matrix.module }}" "${{ matrix.tb }}" "${{ matrix.top }}"
+
+      - name: Upload simulation log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sim-log-${{ matrix.module }}
+          path: build/${{ matrix.module }}/sim.log
+          if-no-files-found: ignore
