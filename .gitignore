@@ -45,3 +45,5 @@ hwpq/register_array/rtl_elaboration/
 *.vcd
 
 obj_dir
+
+.claude

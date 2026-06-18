@@ -69,7 +69,7 @@ jobs:
         run: |
           chmod +x scripts/run_sim.sh
           MODULE_DIR="${{ matrix.module_dir || matrix.module }}"
-          scripts/run_sim.sh "${{ matrix.module }}" "${{ matrix.tb }}" "${{ matrix.top }}"
+          scripts/run_sim.sh "$MODULE_DIR" "${{ matrix.tb }}" "${{ matrix.top }}"
 
       - name: Upload simulation log
         if: always()
