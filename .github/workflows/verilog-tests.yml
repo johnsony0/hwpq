@@ -1,4 +1,4 @@
-name: Verilog Module Tests
+name: Verilog Module Functionality Tests
 
 on:
   push:
@@ -7,52 +7,12 @@ on:
   workflow_dispatch:
 
 jobs:
-  simulate:
-    name: ${{ matrix.module }}
+  simulate_suite:
+    name: Run Sequential Verification Suite
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/${{ github.repository }}:latest
       options: --user root
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - module: register_array
-            tb: "hwpq/register_array/rtl/sim/register_array_tb.sv"
-            top: register_array_tb
-
-          - module: register_array_pipelined
-            tb: "hwpq/register_array_pipelined/rtl/sim/register_array_pipelined_tb.sv"
-            top: register_array_pipelined_tb
-
-          - module: register_tree
-            tb: "hwpq/register_tree/rtl/sim/register_tree_tb.sv"
-            top: register_tree_tb
-
-          - module: register_tree_pipelined
-            tb: "hwpq/register_tree_pipelined/rtl/sim/register_tree_pipelined_tb.sv"
-            top: register_tree_pipelined_tb
-
-          - module: systolic_array
-            tb: hwpq/systolic_array/rtl/sim/systolic_array_tb.sv
-            top: systolic_array_tb
-          
-          - module: "[Bug Test] systolic_array" 
-            module_dir: systolic_array  
-            tb: "hwpq/systolic_array/rtl/sim/systolic_array_bug_tb.sv"
-            top: systolic_array_tb
-
-          - module: bram_tree
-            tb: "hwpq/bram_tree/rtl/sim/bram_tree_tb.sv"
-            top: bram_tree_tb
-
-          - module: bram_tree_pipelined
-            tb: "hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv"
-            top: bram_tree_tb
-
-          - module: hybrid_tree
-            tb: "hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv"
-            top: hybrid_tree_tb
 
     steps:
       - name: Checkout
@@ -64,17 +24,83 @@ jobs:
             apt-get update && apt-get install -y iverilog grep
           fi
           iverilog -V | head -n 1
-
-      - name: Run ${{ matrix.module }} testbench
-        run: |
           chmod +x scripts/run_sim.sh
-          MODULE_DIR="${{ matrix.module_dir || matrix.module }}"
-          scripts/run_sim.sh "$MODULE_DIR" "${{ matrix.tb }}" "${{ matrix.top }}"
 
-      - name: Upload simulation log
+      # ========================================================================
+      # VERIFICATION STEPS
+      # `continue-on-error: true` ensures one failure doesn't abort the rest.
+      # ========================================================================
+
+      - name: register_array
+        id: test_register_array
+        continue-on-error: true
+        run: scripts/run_sim.sh "register_array" "hwpq/register_array/rtl/sim/register_array_tb.sv" "register_array_tb"
+
+      - name: register_array_pipelined
+        id: test_register_array_pipelined
+        continue-on-error: true
+        run: scripts/run_sim.sh "register_array_pipelined" "hwpq/register_array_pipelined/rtl/sim/register_array_pipelined_tb.sv" "register_array_pipelined_tb"
+
+      - name: register_tree
+        id: test_register_tree
+        continue-on-error: true
+        run: scripts/run_sim.sh "register_tree" "hwpq/register_tree/rtl/sim/register_tree_tb.sv" "register_tree_tb"
+
+      - name: register_tree_pipelined
+        id: test_register_tree_pipelined
+        continue-on-error: true
+        run: scripts/run_sim.sh "register_tree_pipelined" "hwpq/register_tree_pipelined/rtl/sim/register_tree_pipelined_tb.sv" "register_tree_pipelined_tb"
+
+      - name: systolic_array
+        id: test_systolic_array
+        continue-on-error: true
+        run: scripts/run_sim.sh "systolic_array" "hwpq/systolic_array/rtl/sim/systolic_array_tb.sv" "systolic_array_tb"
+
+      - name: '[Bug Test] systolic_array'
+        id: test_systolic_array_bug
+        continue-on-error: true
+        run: scripts/run_sim.sh "systolic_array" "hwpq/systolic_array/rtl/sim/systolic_array_bug_tb.sv" "systolic_array_tb"
+
+      - name: bram_tree
+        id: test_bram_tree
+        continue-on-error: true
+        run: scripts/run_sim.sh "bram_tree" "hwpq/bram_tree/rtl/sim/bram_tree_tb.sv" "bram_tree_tb"
+
+      - name: bram_tree_pipelined
+        id: test_bram_tree_pipelined
+        continue-on-error: true
+        run: scripts/run_sim.sh "bram_tree_pipelined" "hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv" "bram_tree_tb"
+
+      - name: hybrid_tree
+        id: test_hybrid_tree
+        continue-on-error: true
+        run: scripts/run_sim.sh "hybrid_tree" "hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv" "hybrid_tree_tb"
+
+      - name: Verify Suite Final Status
+        run: |
+          echo "Evaluating test results..."
+          
+          # Check the outcome properties of every simulation step
+          if [[ "${{ steps.test_register_array.outcome }}" == "failure" || \
+                "${{ steps.test_register_array_pipelined.outcome }}" == "failure" || \
+                "${{ steps.test_register_tree.outcome }}" == "failure" || \
+                "${{ steps.test_register_tree_pipelined.outcome }}" == "failure" || \
+                "${{ steps.test_systolic_array.outcome }}" == "failure" || \
+                "${{ steps.test_systolic_array_bug.outcome }}" == "failure" || \
+                "${{ steps.test_bram_tree.outcome }}" == "failure" || \
+                "${{ steps.test_bram_tree_pipelined.outcome }}" == "failure" || \
+                "${{ steps.test_hybrid_tree.outcome }}" == "failure" ]]; then
+            echo "❌ ERROR: One or more module testbenches failed verification."
+            exit 1
+          else
+            echo "🎉 SUCCESS: All module testbenches passed successfully!"
+            exit 0
+          fi
+
+      - name: Upload all simulation logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: sim-log-${{ matrix.module }}
-          path: build/${{ matrix.module }}/sim.log
+          name: all-sim-logs
+          path: build/
           if-no-files-found: ignore
