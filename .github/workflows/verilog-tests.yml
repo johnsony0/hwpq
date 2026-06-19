@@ -84,7 +84,7 @@ jobs:
           steps.test_hybrid_tree.outcome == 'failure'
         run: |
           echo "ERROR: One or more module testbenches failed verification!"
-          exit
+          exit 1
 
       - name: Upload all simulation logs
         if: always()
