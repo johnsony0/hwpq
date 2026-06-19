@@ -1,4 +1,4 @@
-name: Verilog Module Functionality Tests
+name: hardware Priority Queue Tests
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   simulate_suite:
-    name: Run Sequential Verification Suite
+    name: Functionality Verification
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/${{ github.repository }}:latest
@@ -25,11 +25,6 @@ jobs:
           fi
           iverilog -V | head -n 1
           chmod +x scripts/run_sim.sh
-
-      # ========================================================================
-      # VERIFICATION STEPS
-      # `continue-on-error: true` ensures one failure doesn't abort the rest.
-      # ========================================================================
 
       - name: register_array
         id: test_register_array
@@ -77,25 +72,19 @@ jobs:
         run: scripts/run_sim.sh "hybrid_tree" "hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv" "hybrid_tree_tb"
 
       - name: Verify Suite Final Status
+        if: |
+          steps.test_register_array.outcome == 'failure' ||
+          steps.test_register_array_pipelined.outcome == 'failure' ||
+          steps.test_register_tree.outcome == 'failure' ||
+          steps.test_register_tree_pipelined.outcome == 'failure' ||
+          steps.test_systolic_array.outcome == 'failure' ||
+          steps.test_systolic_array_bug.outcome == 'failure' ||
+          steps.test_bram_tree.outcome == 'failure' ||
+          steps.test_bram_tree_pipelined.outcome == 'failure' ||
+          steps.test_hybrid_tree.outcome == 'failure'
         run: |
-          echo "Evaluating test results..."
-          
-          # Check the outcome properties of every simulation step
-          if [[ "${{ steps.test_register_array.outcome }}" == "failure" || \
-                "${{ steps.test_register_array_pipelined.outcome }}" == "failure" || \
-                "${{ steps.test_register_tree.outcome }}" == "failure" || \
-                "${{ steps.test_register_tree_pipelined.outcome }}" == "failure" || \
-                "${{ steps.test_systolic_array.outcome }}" == "failure" || \
-                "${{ steps.test_systolic_array_bug.outcome }}" == "failure" || \
-                "${{ steps.test_bram_tree.outcome }}" == "failure" || \
-                "${{ steps.test_bram_tree_pipelined.outcome }}" == "failure" || \
-                "${{ steps.test_hybrid_tree.outcome }}" == "failure" ]]; then
-            echo "❌ ERROR: One or more module testbenches failed verification."
-            exit 1
-          else
-            echo "🎉 SUCCESS: All module testbenches passed successfully!"
-            exit 0
-          fi
+          echo "ERROR: One or more module testbenches failed verification!"
+          exit 1
 
       - name: Upload all simulation logs
         if: always()
