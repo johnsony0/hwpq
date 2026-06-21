@@ -33,7 +33,11 @@ module register_array_pipelined #(
 
   generate
     for (genvar i = 0; i < QUEUE_SIZE; i++) begin : l_gen_reset_queue
-      assign reset_queue[i] = '0;
+      if (!ENQ_ENA) begin
+        assign reset_queue[i] = '1;
+      end else begin
+        assign reset_queue[i] = '0;
+      end
     end
   endgenerate
 
@@ -66,12 +70,17 @@ module register_array_pipelined #(
     case ({
       enqueue, dequeue, replace
     })
-      3'b100: next_size = size + 1;
-      3'b010: next_size = size - 1;
+      3'b100: 
+      next_size = (full) ? size :
+                  size + 1;
+      3'b010: 
+      next_size = (empty) ? size :
+                  size - 1;
       3'b001:
-      next_size = (size == '0 && i_data != '0) ? size+1 :
-                         (size != '0 && i_data == '0) ? size-1 :
-                          size;
+      next_size = (o_data == '1 && !ENQ_ENA)    ? size+1 : //special case since reset fills up the pq with highest prio item
+                  (size == '0 && i_data != '0) ? size+1 :
+                  (size != '0 && i_data == '0) ? size-1 :
+                   size;
       default: next_size = size;
     endcase
   end

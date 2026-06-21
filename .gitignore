@@ -47,3 +47,14 @@ hwpq/register_array/rtl_elaboration/
 obj_dir
 
 .claude
+simv
+ucli.key
+verdi_config_file
+*.daidir
+csrc
+.inter*
+.nfs*
+.vcs*
+inter*
+novas*
+verdiLog

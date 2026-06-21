@@ -91,6 +91,19 @@ module register_array_tb;
       .o_data(o_data_dis)
   );
 
+  function automatic void rsort(ref logic [DATA_WIDTH-1:0] q[$:QUEUE_SIZE-1], ref int q_size);
+    logic [DATA_WIDTH-1:0] temp_val;
+    for (int i = 0; i < q_size; i++) begin
+      for (int j = i + 1; j < q_size; j++) begin
+        if (q[i] < q[j]) begin
+          temp_val = q[i];
+          q[i]     = q[j];
+          q[j]     = temp_val;
+        end
+      end
+    end
+  endfunction
+
   always_comb begin : output_signal_switch
     case (current_mode)
       ENABLED : begin
@@ -137,10 +150,11 @@ module register_array_tb;
     // Test with ENQ_ENA enabled
     $display("\n=== Testing with ENQ_ENA enabled ===");
     
-    // Initialize the queue, fill it up to QUEUE_SIZE with random values
+    // Initialize the queue, empty all, then fill it up to QUEUE_SIZE with random values
+
     $display("\nInitializing enqueue enabled module by enqueue into it");
     for (int i = 0; i < QUEUE_SIZE; i++) begin
-      random_value = DATA_WIDTH'(($urandom & ((1 << DATA_WIDTH) - 1)) % 1025);
+      random_value = $urandom_range(1, 1023);
       enqueue(random_value);
     end
     assert (o_full) else $error("The queue should be filled by the intialization!");
@@ -159,7 +173,7 @@ module register_array_tb;
     // Test Case 2: Enqueue nodes with ENQ_ENA enabled
     $display("\nTest Case 2: Enqueue Test (ENQ_ENA enabled)");
     for (int i = 0; i < QUEUE_SIZE / 2; i++) begin
-      random_value = DATA_WIDTH'(($urandom & ((1 << DATA_WIDTH) - 1)) % 1025);
+      random_value = $urandom_range(1, 1023);
       enqueue(random_value);
       assert (o_data == ref_queue_enq_1[0]) else $error("Enqueue: Node value mismatch -> expected %d, got %d", ref_queue_enq_1[0], o_data);
     end
@@ -168,7 +182,7 @@ module register_array_tb;
     // Test Case 3: Replace nodes with ENQ_ENA enabled
     $display("\nTest Case 3: Replace Test (ENQ_ENA enabled)");
     for (int i = 0; i < QUEUE_SIZE / 2; i++) begin
-      random_value = DATA_WIDTH'(($urandom & ((1 << DATA_WIDTH) - 1)) % 1025);
+      random_value = $urandom_range(1, 1023);
       replace(random_value);
       assert (o_data == ref_queue_enq_1[0]) else $error("Replace: Node value mismatch -> expected %d, got %d", ref_queue_enq_1[0], o_data);
     end
@@ -179,7 +193,7 @@ module register_array_tb;
       random_operation = $urandom_range(1, 3);
       case (random_operation)
         ENQUEUE: begin
-          random_value = DATA_WIDTH'(($urandom & ((1 << DATA_WIDTH) - 1)) % 1025);
+          random_value = $urandom_range(1, 1023);
           enqueue(random_value);
           assert (o_data == ref_queue_enq_1[0]) else $error("Random Enqueue: Node value mismatch -> expected %d, got %d", ref_queue_enq_1[0], o_data);
         end
@@ -192,7 +206,7 @@ module register_array_tb;
           end
         end
         REPLACE: begin
-          random_value = DATA_WIDTH'(($urandom & ((1 << DATA_WIDTH) - 1)) % 1025);
+          random_value = $urandom_range(1, 1023);
           replace(random_value);
           assert (o_data == ref_queue_enq_1[0]) else $error("Random Replace: Node value mismatch -> expected %d, got %d", ref_queue_enq_1[0], o_data);
         end
@@ -210,40 +224,19 @@ module register_array_tb;
     @(posedge CLK);
     
     // Initialize queue inside enqueue disabled module
+    $display("\nInitializing enqueue disabled module by replacing into it");
     for (int i = 0; i < QUEUE_SIZE; i++) begin
-      logic [DATA_WIDTH-1:0] tmp;
-
-      random_value = DATA_WIDTH'(($urandom & ((1 << DATA_WIDTH) - 1)) % 1025);
-      ref_queue_enq_0[ref_queue_enq_0_size] = random_value;
+      random_value = $urandom_range(1, 1023);
+      ref_queue_enq_0.push_back(random_value);
       ref_queue_enq_0_size++;
-      
-      for (int i = 0; i < ref_queue_enq_0_size; i++) begin
-        for (int j = i + 1; j < ref_queue_enq_0_size; j++) begin
-          if (ref_queue_enq_0[i] < ref_queue_enq_0[j]) begin
-            tmp = ref_queue_enq_0[i];
-            ref_queue_enq_0[i] = ref_queue_enq_0[j];
-            ref_queue_enq_0[j] = tmp;
-          end
-        end
-      end
+      replace_init(random_value);
     end
-    
-//    $display("\nSorted queue contents:");
-//    for (int i = 0; i < ref_queue_enq_0.size(); i++) begin
-//      $display("ref_queue_enq_0[%0d] = %0d", i, ref_queue_enq_0[i]);
-//    end
-    
-    $display("\nInitializing enqueue disabled module by directly tap into it");
-    for (int i = 0; i < QUEUE_SIZE; i++) begin
-      u_RegisterArray_dis.next_queue[i] = ref_queue_enq_0[i];
-    end
-    u_RegisterArray_dis.next_size = QUEUE_SIZE;
+    rsort(ref_queue_enq_0, ref_queue_enq_0_size);
+
+
+
     repeat (2) @(posedge CLK);
-    
-//    $display("\nRegisterArray_dis.queue contents after initialization:");
-//    for (int i = 0; i < QUEUE_SIZE; i++) begin
-//      $display("u_RegisterArray_dis.queue[%0d] = %0d", i, u_RegisterArray_dis.queue[i]);
-//    end;
+
 
     // Test Case 5: Dequeue Test with ENQ_ENA disabled
     $display("\nTest Case 5: Dequeue Test (ENQ_ENA disabled)");
@@ -262,7 +255,7 @@ module register_array_tb;
     o_data_prev = o_data;
     ref_queue_prev = ref_queue_enq_0;
     for (int i = 0; i < QUEUE_SIZE / 2; i++) begin
-      random_value = DATA_WIDTH'(($urandom & ((1 << DATA_WIDTH) - 1)) % 1025);
+      random_value = $urandom_range(1, 1023);
       enqueue(random_value);
       assert (o_data == ref_queue_enq_0[0]) else $error("Enqueue: Node value mismatch -> expected %d, got %d", ref_queue_enq_0[0], o_data);
     end
@@ -289,7 +282,7 @@ module register_array_tb;
     // Test Case 7: Test Replace operation with ENQ_ENA disabled
     $display("\nTest Case 7: Replace Test (ENQ_ENA disabled)");
     for (int i = 0; i < QUEUE_SIZE / 2; i++) begin
-      random_value = DATA_WIDTH'(($urandom & ((1 << DATA_WIDTH) - 1)) % 1025);
+      random_value = $urandom_range(1, 1023);
       replace(random_value);
       assert (o_data == ref_queue_enq_0[0]) else $error("Replace: Node value mismatch -> expected %d, got %d", ref_queue_enq_0[0], o_data);
     end
@@ -308,7 +301,7 @@ module register_array_tb;
           end
         end
         REPLACE: begin
-          random_value = DATA_WIDTH'(($urandom & ((1 << DATA_WIDTH) - 1)) % 1025);
+          random_value = $urandom_range(1, 1023);
           replace(random_value);
           assert (o_data == ref_queue_enq_0[0]) else $error("Random Replace: Node value mismatch -> expected %d, got %d", ref_queue_enq_0[0], o_data);
         end
@@ -320,7 +313,6 @@ module register_array_tb;
   end
 
   task automatic enqueue(input logic [DATA_WIDTH-1:0] value);
-    logic [DATA_WIDTH-1:0] tmp;
     begin
       if (!o_full) begin
         if (current_mode == ENABLED) begin
@@ -330,17 +322,8 @@ module register_array_tb;
 
           ref_queue_enq_1[ref_queue_enq_1_size] = value;
           ref_queue_enq_1_size++;
-          
-          for (int i = 0; i < ref_queue_enq_1_size; i++) begin
-            for (int j = i + 1; j < ref_queue_enq_1_size; j++) begin
-              if (ref_queue_enq_1[i] < ref_queue_enq_1[j]) begin
-                tmp = ref_queue_enq_1[i];
-                ref_queue_enq_1[i] = ref_queue_enq_1[j];
-                ref_queue_enq_1[j] = tmp;
-              end
-            end
-          end
-
+      
+          rsort(ref_queue_enq_1, ref_queue_enq_1_size);
         end else if (current_mode == DISABLED) begin
           i_wrt_dis = 1;
           i_read_dis = 0;
@@ -400,7 +383,6 @@ module register_array_tb;
   endtask
 
   task automatic replace(input logic [DATA_WIDTH-1:0] value);
-    logic [DATA_WIDTH-1:0] tmp; 
     begin
       if (current_mode == ENABLED) begin
         i_wrt_ena  = 1;
@@ -410,26 +392,10 @@ module register_array_tb;
           ref_queue_enq_1[ref_queue_enq_1_size] = value;
           ref_queue_enq_1_size++;
           
-          for (int i = 0; i < ref_queue_enq_1_size; i++) begin
-            for (int j = i + 1; j < ref_queue_enq_1_size; j++) begin
-              if (ref_queue_enq_1[i] < ref_queue_enq_1[j]) begin
-                tmp = ref_queue_enq_1[i];
-                ref_queue_enq_1[i] = ref_queue_enq_1[j];
-                ref_queue_enq_1[j] = tmp;
-              end
-            end
-          end
+          rsort(ref_queue_enq_1, ref_queue_enq_1_size);
         end else begin
           ref_queue_enq_1[0] = value;
-          for (int i = 0; i < ref_queue_enq_1_size; i++) begin
-            for (int j = i + 1; j < ref_queue_enq_1_size; j++) begin
-              if (ref_queue_enq_1[i] < ref_queue_enq_1[j]) begin
-                tmp = ref_queue_enq_1[i];
-                ref_queue_enq_1[i] = ref_queue_enq_1[j];
-                ref_queue_enq_1[j] = tmp;
-              end
-            end
-          end
+          rsort(ref_queue_enq_1, ref_queue_enq_1_size);
         end
       end else if (current_mode == DISABLED) begin
         i_wrt_dis  = 1;
@@ -438,28 +404,32 @@ module register_array_tb;
         if (o_empty) begin
           ref_queue_enq_0[ref_queue_enq_0_size] = value;
           ref_queue_enq_0_size++;
-          
-          for (int i = 0; i < ref_queue_enq_0_size; i++) begin
-            for (int j = i + 1; j < ref_queue_enq_0_size; j++) begin
-              if (ref_queue_enq_0[i] < ref_queue_enq_0[j]) begin
-                tmp = ref_queue_enq_0[i];
-                ref_queue_enq_0[i] = ref_queue_enq_0[j];
-                ref_queue_enq_0[j] = tmp;
-              end
-            end
-          end
+          rsort(ref_queue_enq_0, ref_queue_enq_0_size);
         end else begin
           ref_queue_enq_0[0] = value;
-          for (int i = 0; i < ref_queue_enq_0_size; i++) begin
-            for (int j = i + 1; j < ref_queue_enq_0_size; j++) begin
-              if (ref_queue_enq_0[i] < ref_queue_enq_0[j]) begin
-                tmp = ref_queue_enq_0[i];
-                ref_queue_enq_0[i] = ref_queue_enq_0[j];
-                ref_queue_enq_0[j] = tmp;
-              end
-            end
-          end
+          rsort(ref_queue_enq_0, ref_queue_enq_0_size);
         end
+      end
+      @(posedge CLK);
+      i_wrt_ena  = 0;
+      i_read_ena = 0;
+      i_wrt_dis  = 0;
+      i_read_dis = 0;
+      if (current_mode == ENABLED) repeat (2) @(posedge CLK);
+      else if (current_mode == DISABLED) repeat (2) @(posedge CLK);
+    end
+  endtask
+
+  task automatic replace_init(input logic [DATA_WIDTH-1:0] value);
+    begin
+      if (current_mode == ENABLED) begin
+        i_wrt_ena  = 1;
+        i_read_ena = 1;
+        i_data_ena = value;
+      end else if (current_mode == DISABLED) begin
+        i_wrt_dis  = 1;
+        i_read_dis = 1;
+        i_data_dis = value;
       end
       @(posedge CLK);
       i_wrt_ena  = 0;

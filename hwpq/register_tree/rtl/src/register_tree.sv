@@ -65,7 +65,11 @@ module register_tree #(
   //----------------------------------------------------------------------
   generate
     for (genvar i = 0; i < NODES_NEEDED; i++) begin : l_gen_reset_queue
-      assign reset_queue[i] = '0;
+      if (!ENQ_ENA) begin
+        assign reset_queue[i] = '1;
+      end else begin
+        assign reset_queue[i] = '0;
+      end
     end
   endgenerate
 
@@ -262,7 +266,10 @@ module register_tree #(
     rep_result[0] = i_data;
     
     // Update size after replace
-    size_after_rep = (size == 0 && i_data != '0) ? size + 1 : size;
+    size_after_rep = (o_data == '1 && !ENQ_ENA)    ? size+1 : //special case since reset fills up the pq with highest prio item
+                  (size == '0 && i_data != '0) ? size+1 :
+                  (size != '0 && i_data == '0) ? size-1 :
+                   size;
   end
 
   //----------------------------------------------------------------------
