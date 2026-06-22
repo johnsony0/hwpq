@@ -207,9 +207,9 @@ module bram_tree #(
     if (!RSTn) begin
       parent_lvl <= '0;
       parent_idx <= '0;
-      level_0 <= '0;
+      level_0 <= '1;
       for (itr_seq = 0; itr_seq < 2; itr_seq++) begin  // initialize 2 registers on level_1 
-        level_1[itr_seq] <= '0;
+        level_1[itr_seq] <= '1;
       end
       for (lvl_seq = 2; lvl_seq < TREE_DEPTH; lvl_seq++) begin  // initialize BRAMs' ports
         addr_a[lvl_seq] <= '0;
@@ -392,7 +392,9 @@ module bram_tree #(
     end else if (!i_wrt && i_read) begin  // dequeue
       next_queue_size = queue_size - 1;
     end else if (i_wrt && i_read) begin  // replace
-      if (queue_size == 0 && i_data != 0) begin  // this would be a special case for replace, function as enqueue
+      if (o_data == '1) begin //special case for following a reset, we need to replace all the values in 
+        next_queue_size = queue_size + 1;
+      end else if (queue_size == 0 && i_data != 0) begin  // this would be a special case for replace, function as enqueue
         next_queue_size = queue_size + 1;
       end else begin
         next_queue_size = queue_size;
