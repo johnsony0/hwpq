@@ -2,7 +2,7 @@
 
 module register_tree_tb;
   // Parameters matching the module under test
-  localparam int QUEUE_SIZE = 15;
+  localparam int QUEUE_SIZE = 31;
   localparam int DATA_WIDTH = 16;
 
   // Clock and reset signals
@@ -199,11 +199,11 @@ module register_tree_tb;
       endcase
     end
 
-    // Now test with ENQ_ENA disabled
+    // Reset the modules
+    
     $display("\n=== Testing with ENQ_ENA disabled ===");
     current_mode = DISABLED;
 
-    // Reset the modules
     RSTn = 0;
     @(posedge CLK);
     RSTn = 1;
@@ -218,19 +218,25 @@ module register_tree_tb;
       replace_init(random_value);
     end
     rsort_dis();
-    
+
+    repeat (4) @(posedge CLK);
+
     // Test Case 4: Dequeue Test with ENQ_ENA disabled
     $display("\nTest Case 4: Dequeue Test (ENQ_ENA disabled)");
-    assert (o_full) else $error("The queue should be filled by the intialization!");
+    assert (o_full)
+    else $error("The queue should be filled by the intialization!");
     for (int i = 0; i < QUEUE_SIZE / 2; i++) begin
       dequeue();
       if (!o_empty) begin
-        assert (o_data == ref_queue_enq_0[0]) else $error("Dequeue: Node value mismatch -> expected %d, got %d", ref_queue_enq_0[0], o_data);
+        assert (o_data == ref_queue_enq_0[0])
+        else
+          $error("Dequeue: Node value mismatch -> expected %d, got %d", ref_queue_enq_0[0], o_data);
       end else begin
-        assert (o_data == 'd0) else $error("Dequeue: Node value mismatch -> expected %d, got %d", 'd0, o_data);
+        assert (o_data == 'd0)
+        else $error("Dequeue: Node value mismatch -> expected %d, got %d", 'd0, o_data);
       end
     end
-    
+
     // Test Case 5: Try to Enqueue nodes with ENQ_ENA disabled
     $display("\nTest Case 5: Enqueue Test (ENQ_ENA disabled)");
     o_data_prev = o_data;
@@ -238,7 +244,9 @@ module register_tree_tb;
     for (int i = 0; i < QUEUE_SIZE / 2; i++) begin
       random_value = $urandom_range(1, 1023);
       enqueue(random_value);
-      assert (o_data == ref_queue_enq_0[0]) else $error("Enqueue: Node value mismatch -> expected %d, got %d", ref_queue_enq_0[0], o_data);
+      assert (o_data == ref_queue_enq_0[0])
+      else
+        $error("Enqueue: Node value mismatch -> expected %d, got %d", ref_queue_enq_0[0], o_data);
     end
     assert (o_data == o_data_prev) else $error("The queue should not have change!");
     begin
@@ -265,9 +273,11 @@ module register_tree_tb;
     for (int i = 0; i < QUEUE_SIZE / 2; i++) begin
       random_value = $urandom_range(1, 1023);
       replace(random_value);
-      assert (o_data == ref_queue_enq_0[0]) else $error("Replace: Node value mismatch -> expected %d, got %d", ref_queue_enq_0[0], o_data);
+      assert (o_data == ref_queue_enq_0[0])
+      else
+        $error("Replace: Node value mismatch -> expected %d, got %d", ref_queue_enq_0[0], o_data);
     end
-    
+
     // Test case 8: Random opertaion for 50 times
     $display("\nTest Case 8: Stress Test (ENQ_ENA disabled)");
     for (int i = 0; i < 50; i++) begin
@@ -276,15 +286,28 @@ module register_tree_tb;
         DEQUEUE: begin
           dequeue();
           if (!o_empty) begin
-            assert (o_data == ref_queue_enq_0[0]) else $error("Random Dequeue: Node value mismatch -> expected %d, got %d", ref_queue_enq_0[0], o_data);
+            assert (o_data == ref_queue_enq_0[0])
+            else
+              $error(
+                  "Random Dequeue: Node value mismatch -> expected %d, got %d",
+                  ref_queue_enq_0[0],
+                  o_data
+              );
           end else begin
-            assert (o_data == '0) else $error("Random Dequeue: Node value mismatch -> expected %d, got %d", '0, o_data);
+            assert (o_data == '0)
+            else $error("Random Dequeue: Node value mismatch -> expected %d, got %d", '0, o_data);
           end
         end
         REPLACE: begin
           random_value = $urandom_range(1, 1023);
           replace(random_value);
-          assert (o_data == ref_queue_enq_0[0]) else $error("Random Replace: Node value mismatch -> expected %d, got %d", ref_queue_enq_0[0], o_data);
+          assert (o_data == ref_queue_enq_0[0])
+          else
+            $error(
+                "Random Replace: Node value mismatch -> expected %d, got %d",
+                ref_queue_enq_0[0],
+                o_data
+            );
         end
       endcase
     end
@@ -300,12 +323,16 @@ module register_tree_tb;
           i_wrt_ena = 1;
           i_read_ena = 0;
           i_data_ena = value;
-          ref_queue_enq_1.push_back(value);
+
+          ref_queue_enq_1[ref_queue_enq_1_size] = value;
+          ref_queue_enq_1_size++;
+      
           rsort_ena();
         end else if (current_mode == DISABLED) begin
           i_wrt_dis = 1;
           i_read_dis = 0;
           i_data_dis = value;
+//          $display("Enqueue attempt with ENQ_ENA disabled - should have no effect");
         end
       end else begin
         $display("Enqueue: Queue full, skipping enqueue");
@@ -316,7 +343,7 @@ module register_tree_tb;
       i_wrt_dis  = 0;
       i_read_dis = 0;
       if (current_mode == ENABLED) repeat ($clog2(QUEUE_SIZE)) @(posedge CLK);
-      else if (current_mode == DISABLED) repeat (2) @(posedge CLK);
+      else if (current_mode == DISABLED) repeat (2) @(posedge CLK); // should have no effects
     end
   endtask
 
@@ -327,12 +354,13 @@ module register_tree_tb;
           i_wrt_ena  = 0;
           i_read_ena = 1;
           i_data_ena = 0;
-          
+
           for (int i = 0; i < ref_queue_enq_1_size - 1; i++) begin
             ref_queue_enq_1[i] = ref_queue_enq_1[i+1];
           end
           ref_queue_enq_1[ref_queue_enq_1_size-1] = '0; 
           ref_queue_enq_1_size--;
+
         end else if (current_mode == DISABLED) begin
           i_wrt_dis  = 0;
           i_read_dis = 1;
@@ -343,6 +371,7 @@ module register_tree_tb;
           end
           ref_queue_enq_0[ref_queue_enq_0_size-1] = '0; 
           ref_queue_enq_0_size--;
+
         end
       end else begin
         $display("Dequeue: Queue empty, skipping dequeue");
@@ -366,6 +395,7 @@ module register_tree_tb;
         if (o_empty) begin
           ref_queue_enq_1[ref_queue_enq_1_size] = value;
           ref_queue_enq_1_size++;
+          
           rsort_ena();
         end else begin
           ref_queue_enq_1[0] = value;

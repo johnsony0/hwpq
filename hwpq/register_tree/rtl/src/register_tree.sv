@@ -40,15 +40,10 @@ module register_tree #(
   
   // Results of each operation - calculated in parallel
   logic [DATA_WIDTH-1:0] swap_result[NODES_NEEDED];
-  logic [DATA_WIDTH-1:0] enq_result[NODES_NEEDED];
-  logic [DATA_WIDTH-1:0] deq_result[NODES_NEEDED];
-  logic [DATA_WIDTH-1:0] rep_result[NODES_NEEDED];
+  logic [DATA_WIDTH-1:0] next_queue[NODES_NEEDED];
   
   // Size after each operation
-  logic [$clog2(NODES_NEEDED)-1:0] size_after_swap;
-  logic [$clog2(NODES_NEEDED)-1:0] size_after_enq;
-  logic [$clog2(NODES_NEEDED)-1:0] size_after_deq;
-  logic [$clog2(NODES_NEEDED)-1:0] size_after_rep;
+  logic [$clog2(NODES_NEEDED)-1:0] next_size;
 
   logic [DATA_WIDTH-1:0] even_phase_queue[NODES_NEEDED];
   logic [DATA_WIDTH-1:0] final_swap_result[NODES_NEEDED];
@@ -59,12 +54,13 @@ module register_tree #(
   logic parent_less_than_right;
   logic [DATA_WIDTH-1:0] new_parent, new_left, new_right;
 
+  int found_empty_index;
 
   //----------------------------------------------------------------------
   // Initialize reset_queue to zeros
   //----------------------------------------------------------------------
   generate
-    for (genvar i = 0; i < NODES_NEEDED; i++) begin : l_gen_reset_queue
+    for (genvar i = 0; i < QUEUE_SIZE; i++) begin : l_gen_reset_queue
       if (!ENQ_ENA) begin
         assign reset_queue[i] = '1;
       end else begin
@@ -207,108 +203,72 @@ module register_tree #(
     for (int i = 0; i < NODES_NEEDED; i++) begin
       swap_result[i] = final_swap_result[i];
     end
-    size_after_swap = size; // Swap doesn't change the size
   end
 
-  //----------------------------------------------------------------------
-  // Enqueue operation
-  //----------------------------------------------------------------------
-  always_comb begin : prepare_enq_result
-    // Find first empty slot
-    logic [$clog2(NODES_NEEDED)-1:0] found_empty_idx;
-    found_empty_idx = NODES_NEEDED;
-    
-    for (int i = NODES_NEEDED-1; i >= 0; i--) begin
-      if (queue[i] == 0) begin
-        found_empty_idx = (i < found_empty_idx) ? i : found_empty_idx;
-      end else begin
-        found_empty_idx = found_empty_idx;
+  always_comb begin : calcualte_next_queue
+    case ({
+      enqueue, dequeue, replace
+    })
+      3'b100: begin  // Enqueue
+        found_empty_index = NODES_NEEDED - 1;  // Start from the last index
+        for (int i = (1 << (TREE_DEPTH - 1)) - 1; i < (1 << (TREE_DEPTH)) - 1; i++) begin
+          found_empty_index = (queue[i] == '0) ? i : found_empty_index;
+        end
+        for (int i = 0; i < NODES_NEEDED; i++) begin
+          next_queue[i] = queue[i];
+        end
+        next_queue[found_empty_index] = i_data;
       end
-    end
-    
-    // Create enqueue result
-    for (int i = 0; i < NODES_NEEDED; i++) begin
-      enq_result[i] = queue[i];
-    end
-    
-    if (found_empty_idx < NODES_NEEDED) begin
-      enq_result[found_empty_idx] = i_data;
-    end else begin
-      // Do nothing
-    end
-    
-    // Update size after enqueue
-    size_after_enq = (!full) ? size + 1 : size;
+      3'b010: begin  // Dequeue
+        for (int i = 0; i < NODES_NEEDED; i++) begin
+          next_queue[i] = queue[i];
+        end
+        next_queue[0] = '0;
+      end
+      3'b001: begin  // Replace
+        for (int i = 0; i < NODES_NEEDED; i++) begin
+          next_queue[i] = queue[i];
+        end
+        next_queue[0] = i_data;
+      end
+      default: begin
+        for (int i = 0; i < NODES_NEEDED; i++) begin
+          next_queue[i] = swap_result[i];
+        end
+      end
+    endcase
   end
 
-  //----------------------------------------------------------------------
-  // Dequeue operation
-  //----------------------------------------------------------------------
-  always_comb begin : prepare_deq_result
-    // Create dequeue result - remove root
-    for (int i = 0; i < NODES_NEEDED; i++) begin
-      deq_result[i] = queue[i];
-    end
-    deq_result[0] = '0;
-    
-    // Update size after dequeue
-    size_after_deq = (!empty) ? size - 1 : size;
-  end
-
-  //----------------------------------------------------------------------
-  // Replace operation
-  //----------------------------------------------------------------------
-  always_comb begin : prepare_rep_result
-    // Create replace result - replace root
-    for (int i = 0; i < NODES_NEEDED; i++) begin
-      rep_result[i] = queue[i];
-    end
-    rep_result[0] = i_data;
-    
-    // Update size after replace
-    size_after_rep = (o_data == '1 && !ENQ_ENA)    ? size+1 : //special case since reset fills up the pq with highest prio item
+  always_comb begin : calculate_next_size
+    case ({
+      enqueue, dequeue, replace
+    })
+      3'b100: 
+      next_size = (full) ? size :
+                  size + 1;
+      3'b010: 
+      next_size = (empty) ? size :
+                  size - 1;
+      3'b001:
+      next_size = (o_data == '1 && !ENQ_ENA)    ? size+1 : //special case since reset fills up the pq with highest prio item
                   (size == '0 && i_data != '0) ? size+1 :
                   (size != '0 && i_data == '0) ? size-1 :
                    size;
+      default: next_size = size;
+    endcase
   end
 
-  //----------------------------------------------------------------------
-  // Sequential logic - update registers
-  //----------------------------------------------------------------------
   always_ff @(posedge i_CLK or negedge i_RSTn) begin : update_registers
     if (!i_RSTn) begin
-      // Reset condition
       for (int i = 0; i < NODES_NEEDED; i++) begin
         queue[i] <= reset_queue[i];
       end
-      size <= '0;
+      size            <= 0;
     end else begin
-      // Normal operation - select based on control inputs
-      if (enqueue) begin
-        // Enqueue operation
-        for (int i = 0; i < NODES_NEEDED; i++) begin
-          queue[i] <= enq_result[i];
-        end
-        size <= size_after_enq;
-      end else if (dequeue) begin
-        // Dequeue operation
-        for (int i = 0; i < NODES_NEEDED; i++) begin
-          queue[i] <= deq_result[i];
-        end
-        size <= size_after_deq;
-      end else if (replace) begin
-        // Replace operation
-        for (int i = 0; i < NODES_NEEDED; i++) begin
-          queue[i] <= rep_result[i];
-        end
-        size <= size_after_rep;
-      end else begin
-        // Compare and swap for heap maintenance
-        for (int i = 0; i < NODES_NEEDED; i++) begin
-          queue[i] <= swap_result[i];
-        end
-        size <= size_after_swap;
+      for (int i = 0; i < NODES_NEEDED; i++) begin
+        queue[i] <= next_queue[i];
       end
+      size            <= next_size;
     end
   end
 
