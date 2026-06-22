@@ -91,19 +91,6 @@ module register_array_tb;
       .o_data(o_data_dis)
   );
 
-  function automatic void rsort(ref logic [DATA_WIDTH-1:0] q[$:QUEUE_SIZE-1], ref int q_size);
-    logic [DATA_WIDTH-1:0] temp_val;
-    for (int i = 0; i < q_size; i++) begin
-      for (int j = i + 1; j < q_size; j++) begin
-        if (q[i] < q[j]) begin
-          temp_val = q[i];
-          q[i]     = q[j];
-          q[j]     = temp_val;
-        end
-      end
-    end
-  endfunction
-
   always_comb begin : output_signal_switch
     case (current_mode)
       ENABLED : begin
@@ -231,7 +218,7 @@ module register_array_tb;
       ref_queue_enq_0_size++;
       replace_init(random_value);
     end
-    rsort(ref_queue_enq_0, ref_queue_enq_0_size);
+    rsort_dis();
 
 
 
@@ -323,7 +310,7 @@ module register_array_tb;
           ref_queue_enq_1[ref_queue_enq_1_size] = value;
           ref_queue_enq_1_size++;
       
-          rsort(ref_queue_enq_1, ref_queue_enq_1_size);
+          rsort_ena();
         end else if (current_mode == DISABLED) begin
           i_wrt_dis = 1;
           i_read_dis = 0;
@@ -391,11 +378,10 @@ module register_array_tb;
         if (o_empty) begin
           ref_queue_enq_1[ref_queue_enq_1_size] = value;
           ref_queue_enq_1_size++;
-          
-          rsort(ref_queue_enq_1, ref_queue_enq_1_size);
+          rsort_ena();
         end else begin
           ref_queue_enq_1[0] = value;
-          rsort(ref_queue_enq_1, ref_queue_enq_1_size);
+          rsort_ena();
         end
       end else if (current_mode == DISABLED) begin
         i_wrt_dis  = 1;
@@ -404,10 +390,10 @@ module register_array_tb;
         if (o_empty) begin
           ref_queue_enq_0[ref_queue_enq_0_size] = value;
           ref_queue_enq_0_size++;
-          rsort(ref_queue_enq_0, ref_queue_enq_0_size);
+          rsort_dis();
         end else begin
           ref_queue_enq_0[0] = value;
-          rsort(ref_queue_enq_0, ref_queue_enq_0_size);
+          rsort_dis();
         end
       end
       @(posedge CLK);
@@ -438,6 +424,32 @@ module register_array_tb;
       i_read_dis = 0;
       if (current_mode == ENABLED) repeat (2) @(posedge CLK);
       else if (current_mode == DISABLED) repeat (2) @(posedge CLK);
+    end
+  endtask
+
+  task automatic rsort_ena();
+    logic [DATA_WIDTH-1:0] temp_val;
+    for (int i = 0; i < ref_queue_enq_1_size; i++) begin
+      for (int j = i + 1; j < ref_queue_enq_1_size; j++) begin
+        if (ref_queue_enq_1[i] < ref_queue_enq_1[j]) begin
+          temp_val           = ref_queue_enq_1[i];
+          ref_queue_enq_1[i] = ref_queue_enq_1[j];
+          ref_queue_enq_1[j] = temp_val;
+        end
+      end
+    end
+  endtask
+
+  task automatic rsort_dis();
+    logic [DATA_WIDTH-1:0] temp_val;
+    for (int i = 0; i < ref_queue_enq_0_size; i++) begin
+      for (int j = i + 1; j < ref_queue_enq_0_size; j++) begin
+        if (ref_queue_enq_0[i] < ref_queue_enq_0[j]) begin
+          temp_val           = ref_queue_enq_0[i];
+          ref_queue_enq_0[i] = ref_queue_enq_0[j];
+          ref_queue_enq_0[j] = temp_val;
+        end
+      end
     end
   endtask
 

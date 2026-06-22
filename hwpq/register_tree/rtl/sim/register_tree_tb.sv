@@ -91,19 +91,6 @@ module register_tree_tb;
       .o_data(o_data_dis)
   );
 
-  function automatic void rsort(ref logic [DATA_WIDTH-1:0] q[$:QUEUE_SIZE-1], ref int q_size);
-    logic [DATA_WIDTH-1:0] temp_val;
-    for (int i = 0; i < q_size; i++) begin
-      for (int j = i + 1; j < q_size; j++) begin
-        if (q[i] < q[j]) begin
-          temp_val = q[i];
-          q[i]     = q[j];
-          q[j]     = temp_val;
-        end
-      end
-    end
-  endfunction
-
   always_comb begin : output_signal_switch
     case (current_mode)
       ENABLED : begin
@@ -230,7 +217,7 @@ module register_tree_tb;
       ref_queue_enq_0_size++;
       replace_init(random_value);
     end
-    ref_queue_enq_0.rsort();
+    rsort_dis();
     
     // Test Case 4: Dequeue Test with ENQ_ENA disabled
     $display("\nTest Case 4: Dequeue Test (ENQ_ENA disabled)");
@@ -314,7 +301,7 @@ module register_tree_tb;
           i_read_ena = 0;
           i_data_ena = value;
           ref_queue_enq_1.push_back(value);
-          ref_queue_enq_1.rsort();
+          rsort_ena();
         end else if (current_mode == DISABLED) begin
           i_wrt_dis = 1;
           i_read_dis = 0;
@@ -340,14 +327,22 @@ module register_tree_tb;
           i_wrt_ena  = 0;
           i_read_ena = 1;
           i_data_ena = 0;
-          ref_queue_enq_1.pop_front();
-          ref_queue_enq_1.rsort();
+          
+          for (int i = 0; i < ref_queue_enq_1_size - 1; i++) begin
+            ref_queue_enq_1[i] = ref_queue_enq_1[i+1];
+          end
+          ref_queue_enq_1[ref_queue_enq_1_size-1] = '0; 
+          ref_queue_enq_1_size--;
         end else if (current_mode == DISABLED) begin
           i_wrt_dis  = 0;
           i_read_dis = 1;
           i_data_dis = 0;
-          ref_queue_enq_0.pop_front();
-          ref_queue_enq_0.rsort();
+
+          for (int i = 0; i < ref_queue_enq_0_size - 1; i++) begin
+            ref_queue_enq_0[i] = ref_queue_enq_0[i+1];
+          end
+          ref_queue_enq_0[ref_queue_enq_0_size-1] = '0; 
+          ref_queue_enq_0_size--;
         end
       end else begin
         $display("Dequeue: Queue empty, skipping dequeue");
@@ -369,23 +364,25 @@ module register_tree_tb;
         i_read_ena = 1;
         i_data_ena = value;
         if (o_empty) begin
-          ref_queue_enq_1.push_back(value);
+          ref_queue_enq_1[ref_queue_enq_1_size] = value;
+          ref_queue_enq_1_size++;
+          rsort_ena();
         end else begin
-          ref_queue_enq_1.pop_front();
-          ref_queue_enq_1.push_back(value);
+          ref_queue_enq_1[0] = value;
+          rsort_ena();
         end
-        ref_queue_enq_1.rsort();
       end else if (current_mode == DISABLED) begin
         i_wrt_dis  = 1;
         i_read_dis = 1;
         i_data_dis = value;
         if (o_empty) begin
-          ref_queue_enq_0.push_back(value);
+          ref_queue_enq_0[ref_queue_enq_0_size] = value;
+          ref_queue_enq_0_size++;
+          rsort_dis();
         end else begin
-          ref_queue_enq_0.pop_front();
-          ref_queue_enq_0.push_back(value);
+          ref_queue_enq_0[0] = value;
+          rsort_dis();
         end
-        ref_queue_enq_0.rsort();
       end
       @(posedge CLK);
       i_wrt_ena  = 0;
@@ -415,6 +412,32 @@ module register_tree_tb;
       i_read_dis = 0;
       if (current_mode == ENABLED) repeat (2) @(posedge CLK);
       else if (current_mode == DISABLED) repeat (2) @(posedge CLK);
+    end
+  endtask
+
+  task automatic rsort_ena();
+    logic [DATA_WIDTH-1:0] temp_val;
+    for (int i = 0; i < ref_queue_enq_1_size; i++) begin
+      for (int j = i + 1; j < ref_queue_enq_1_size; j++) begin
+        if (ref_queue_enq_1[i] < ref_queue_enq_1[j]) begin
+          temp_val           = ref_queue_enq_1[i];
+          ref_queue_enq_1[i] = ref_queue_enq_1[j];
+          ref_queue_enq_1[j] = temp_val;
+        end
+      end
+    end
+  endtask
+
+  task automatic rsort_dis();
+    logic [DATA_WIDTH-1:0] temp_val;
+    for (int i = 0; i < ref_queue_enq_0_size; i++) begin
+      for (int j = i + 1; j < ref_queue_enq_0_size; j++) begin
+        if (ref_queue_enq_0[i] < ref_queue_enq_0[j]) begin
+          temp_val           = ref_queue_enq_0[i];
+          ref_queue_enq_0[i] = ref_queue_enq_0[j];
+          ref_queue_enq_0[j] = temp_val;
+        end
+      end
     end
   endtask
 
