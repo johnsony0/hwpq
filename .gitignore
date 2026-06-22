@@ -58,3 +58,7 @@ csrc
 inter*
 novas*
 verdiLog
+
+.claude
+
+build
