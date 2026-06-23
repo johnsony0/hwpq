@@ -19,7 +19,10 @@ package bram_tree_pkg;
   } bram_tree_curr_t;
 endpackage
 
-module bram_tree (
+module bram_tree #(
+		parameter integer QUEUE_SIZE = bram_tree_pkg::QUEUE_SIZE,
+    parameter integer DATA_WIDTH = bram_tree_pkg::DATA_WIDTH
+)(
     input  logic                  CLK,
     input  logic                  RSTn,
     // Inputs
@@ -32,9 +35,7 @@ module bram_tree (
     output logic [DATA_WIDTH-1:0] o_data    // Output data (Root node)
 );
 
-  localparam integer TREE_DEPTH    = $clog2(QUEUE_SIZE + 1);
-  localparam integer NODES_NEEDED  = (1 << TREE_DEPTH) - 1; 
-  localparam integer ADDRESS_WIDTH = $clog2(NODES_NEEDED);
+  import bram_tree_pkg::*;
 
   typedef enum logic [3:0] {
     IDLE                       = 4'd0,
