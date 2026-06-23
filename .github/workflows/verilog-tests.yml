@@ -64,7 +64,7 @@ jobs:
       - name: bram_tree_pipelined
         id: test_bram_tree_pipelined
         continue-on-error: true
-        run: scripts/run_sim.sh "bram_tree_pipelined" "hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv" "bram_tree_tb"
+        run: scripts/run_sim.sh "bram_tree_pipelined" "hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv" "bram_tree_pipelined_tb"
 
 #      - name: hybrid_tree
 #        id: test_hybrid_tree

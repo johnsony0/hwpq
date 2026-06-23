@@ -1,4 +1,4 @@
-module pipelined_bram_tree #(
+module bram_tree_pipelined #(
     parameter integer QUEUE_SIZE = 7,
     parameter integer DATA_WIDTH = 16
 ) (
