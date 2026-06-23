@@ -80,7 +80,7 @@ jobs:
           steps.test_systolic_array.outcome == 'failure' ||
           steps.test_systolic_array_bug.outcome == 'failure' ||
           steps.test_bram_tree.outcome == 'failure' ||
-          steps.test_bram_tree_pipelined.outcome == 'failure' ||
+          steps.test_bram_tree_pipelined.outcome == 'failure'
 #          steps.test_hybrid_tree.outcome == 'failure'
         run: |
           echo "ERROR: One or more module testbenches failed verification!"
