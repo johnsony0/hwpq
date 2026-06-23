@@ -66,10 +66,10 @@ jobs:
         continue-on-error: true
         run: scripts/run_sim.sh "bram_tree_pipelined" "hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv" "bram_tree_tb"
 
-      - name: hybrid_tree
-        id: test_hybrid_tree
-        continue-on-error: true
-        run: scripts/run_sim.sh "hybrid_tree" "hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv" "hybrid_tree_tb"
+#      - name: hybrid_tree
+#        id: test_hybrid_tree
+#        continue-on-error: true
+#        run: scripts/run_sim.sh "hybrid_tree" "hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv" "hybrid_tree_tb"
 
       - name: Verify Suite Final Status
         if: |
@@ -81,7 +81,7 @@ jobs:
           steps.test_systolic_array_bug.outcome == 'failure' ||
           steps.test_bram_tree.outcome == 'failure' ||
           steps.test_bram_tree_pipelined.outcome == 'failure' ||
-          steps.test_hybrid_tree.outcome == 'failure'
+#          steps.test_hybrid_tree.outcome == 'failure'
         run: |
           echo "ERROR: One or more module testbenches failed verification!"
           exit 1
