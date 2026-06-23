@@ -11,7 +11,7 @@ jobs:
     name: Functionality Verification
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/${{ github.repository }}:latest
+      image: ghcr.io/johnsony0/hwpq:latest
       options: --user root
 
     steps:
