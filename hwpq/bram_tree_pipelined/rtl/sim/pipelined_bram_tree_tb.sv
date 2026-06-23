@@ -1,4 +1,4 @@
-module bram_tree_tb;
+module pipelined_bram_tree_tb;
   // Parameters matching the module under test
   localparam integer QueueSize = 15;
   localparam integer DataWidth = 16;
@@ -33,7 +33,7 @@ module bram_tree_tb;
   } operation_t;
 
   // Instantiate the register_tree module
-  bram_tree #(
+  pipelined_bram_tree #(
       .QUEUE_SIZE(QueueSize),
       .DATA_WIDTH(DataWidth)
   ) uut (

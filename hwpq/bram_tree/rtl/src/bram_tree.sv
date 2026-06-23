@@ -1,4 +1,23 @@
-import bram_tree_pkg::*;
+package bram_tree_pkg;
+  localparam integer DATA_WIDTH = 16;
+  localparam integer QUEUE_SIZE = 7;
+  localparam integer TREE_DEPTH    = $clog2(QUEUE_SIZE + 1);
+  localparam integer NODES_NEEDED  = (1 << TREE_DEPTH) - 1; 
+  localparam integer ADDRESS_WIDTH = $clog2(NODES_NEEDED);
+
+  // Define your structs here so all modules can see them
+  typedef struct packed {
+    logic active;
+    logic [DATA_WIDTH-1:0] value;
+    logic [ADDRESS_WIDTH-1:0] capacity;
+  } bram_tree_mem_t;
+
+  typedef struct packed {
+    logic [DATA_WIDTH-1:0] value;
+    logic [ADDRESS_WIDTH-1:0] position;
+    logic [ADDRESS_WIDTH-1:0] capacity;
+  } bram_tree_curr_t;
+endpackage
 
 module bram_tree (
     input  logic                  CLK,
@@ -12,6 +31,10 @@ module bram_tree (
     output logic                  o_empty,  // High if the heap is empty
     output logic [DATA_WIDTH-1:0] o_data    // Output data (Root node)
 );
+
+  localparam integer TREE_DEPTH    = $clog2(QUEUE_SIZE + 1);
+  localparam integer NODES_NEEDED  = (1 << TREE_DEPTH) - 1; 
+  localparam integer ADDRESS_WIDTH = $clog2(NODES_NEEDED);
 
   typedef enum logic [3:0] {
     IDLE                       = 4'd0,
@@ -30,6 +53,20 @@ module bram_tree (
     REPLACE_READ_CHILD   = 4'd10,
     REPLACE_COMPARE_CHILD = 4'd11
   } state_t;
+
+  // Keep track if the node is active, it's value and how much available nodes are under it
+  typedef struct packed {
+    logic active;
+    logic [DATA_WIDTH-1:0] value;
+    logic [ADDRESS_WIDTH-1:0]  capacity;
+  } bram_tree_mem_t;
+
+  // Keep track of the current node's value and position
+  typedef struct packed {
+    logic [DATA_WIDTH-1:0] value;
+    logic [ADDRESS_WIDTH-1:0] position;
+    logic [ADDRESS_WIDTH-1:0] capacity;
+  } bram_tree_curr_t;
 
   state_t state, next_state;
   bram_tree_curr_t curr, next;
@@ -109,7 +146,7 @@ module bram_tree (
 
             din_a.active   = 1'b1;
             din_a.value    = i_data;
-            din_a.capacity = BRAM_TREE_QUEUE_SIZE - 1;
+            din_a.capacity = QUEUE_SIZE - 1;
 
             next_out_reg = i_data;
             next_state = IDLE;
@@ -289,13 +326,13 @@ module bram_tree (
 
       DEQUEUE_COMPARE_ROOT: begin
         //if both nodes are inactive or we are at the end, we go to idle next, because this is root, we set the next max out
-        if ((!dout_a.active && !dout_b.active) || (child_idx_left > BRAM_TREE_QUEUE_SIZE) || (child_idx_right > BRAM_TREE_QUEUE_SIZE)) begin
+        if ((!dout_a.active && !dout_b.active) || (child_idx_left > QUEUE_SIZE) || (child_idx_right > QUEUE_SIZE)) begin
           addr_a = curr.position;
           we_a = 1;
           
           din_a.active   = 1'b0;
           din_a.value    = '0;
-          din_a.capacity = BRAM_TREE_QUEUE_SIZE;
+          din_a.capacity = QUEUE_SIZE;
           
           next_state = IDLE;
         end else begin
@@ -393,7 +430,7 @@ module bram_tree (
 
       DEQUEUE_READ_CHILD: begin
         //read child_idx_left and child_idx_right
-        if ((child_idx_left > BRAM_TREE_QUEUE_SIZE) || (child_idx_right > BRAM_TREE_QUEUE_SIZE)) begin
+        if ((child_idx_left > QUEUE_SIZE) || (child_idx_right > QUEUE_SIZE)) begin
           next_state = IDLE;
         end else begin
           addr_a = child_idx_left;
@@ -404,7 +441,7 @@ module bram_tree (
 
       DEQUEUE_COMPARE_CHILD: begin
         //if both nodes are inactive or we are at the end, we go to idle next
-        if ((!dout_a.active && !dout_b.active) || (child_idx_left > BRAM_TREE_QUEUE_SIZE) || (child_idx_right > BRAM_TREE_QUEUE_SIZE)) begin
+        if ((!dout_a.active && !dout_b.active) || (child_idx_left > QUEUE_SIZE) || (child_idx_right > QUEUE_SIZE)) begin
           next_state = IDLE;
         end else begin
           // if only one is inactive we pull that value
@@ -501,7 +538,7 @@ module bram_tree (
 
       REPLACE_COMPARE_ROOT: begin
         //if the current node is the only node or the greatest node, we just write into it and go back to idle
-        if ((!dout_a.active && !dout_b.active) || (child_idx_left > BRAM_TREE_QUEUE_SIZE) || (child_idx_right > BRAM_TREE_QUEUE_SIZE) || ((curr.value >= dout_a.value) && (curr.value >= dout_b.value))) begin
+        if ((!dout_a.active && !dout_b.active) || (child_idx_left > QUEUE_SIZE) || (child_idx_right > QUEUE_SIZE) || ((curr.value >= dout_a.value) && (curr.value >= dout_b.value))) begin
           addr_a = curr.position;
           we_a = 1;
           
@@ -561,7 +598,7 @@ module bram_tree (
 
       REPLACE_READ_CHILD: begin
         //read child_idx_left and child_idx_right
-        if ((child_idx_left > BRAM_TREE_QUEUE_SIZE) || (child_idx_right > BRAM_TREE_QUEUE_SIZE)) begin
+        if ((child_idx_left > QUEUE_SIZE) || (child_idx_right > QUEUE_SIZE)) begin
           next_state = IDLE;
         end else begin
           addr_a = child_idx_left;
@@ -571,7 +608,7 @@ module bram_tree (
       end
       
       REPLACE_COMPARE_CHILD: begin
-        if ((!dout_a.active && !dout_b.active) || (child_idx_left > BRAM_TREE_QUEUE_SIZE) || (child_idx_right > BRAM_TREE_QUEUE_SIZE) || ((curr.value >= dout_a.value) && (curr.value >= dout_b.value))) begin
+        if ((!dout_a.active && !dout_b.active) || (child_idx_left > QUEUE_SIZE) || (child_idx_right > QUEUE_SIZE) || ((curr.value >= dout_a.value) && (curr.value >= dout_b.value))) begin
           addr_a = curr.position;
           we_a = 1;
           
@@ -626,7 +663,7 @@ module bram_tree (
     endcase
   end
 
-  assign o_full  = (queue_size == BRAM_TREE_QUEUE_SIZE);
+  assign o_full  = (queue_size == QUEUE_SIZE);
   assign o_empty = (queue_size == 0);
   assign o_data  = (queue_size == 0) ? 0 : out_reg;
   assign ready   = (state == IDLE);

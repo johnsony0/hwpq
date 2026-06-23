@@ -41,24 +41,6 @@ hwpq/register_array/rtl_elaboration/
 # MacOS
 .DS_Store
 
+obj_dir
 *.vvp
 *.vcd
-
-obj_dir
-
-.claude
-simv
-ucli.key
-verdi_config_file
-*.daidir
-csrc
-.inter*
-.nfs*
-.vcs*
-inter*
-novas*
-verdiLog
-
-.claude
-
-build

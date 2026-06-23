@@ -16,7 +16,7 @@ module bram_tree_tb;
   logic   [DATA_WIDTH-1:0] o_data;
 
   // Reference array for verification
-  logic [DATA_WIDTH-1:0] ref_queue        [$:BRAM_TREE_QUEUE_SIZE-1];
+  logic [DATA_WIDTH-1:0] ref_queue        [$:QUEUE_SIZE-1];
   int                    ref_size = 0;
 
   // Test variables
@@ -59,7 +59,7 @@ module bram_tree_tb;
     repeat (2) @(posedge CLK);
 
     // Initialize the reference queue, sort the reference queue, and write to the queue
-    for (i = 0; i < BRAM_TREE_QUEUE_SIZE; i++) begin
+    for (i = 0; i < QUEUE_SIZE; i++) begin
       random_value = $urandom_range(0, 1024);
       enqueue(random_value);
     end
@@ -69,7 +69,7 @@ module bram_tree_tb;
     // Test Case 1: Dequeue nodes
     // Dequeue nodes for QUEUE_SIZE times
     $display("\nTest Case 1: Dequeue Test");
-    for (i = 0; i < BRAM_TREE_QUEUE_SIZE; i++) begin
+    for (i = 0; i < QUEUE_SIZE; i++) begin
       dequeue();
       if (!o_empty) begin
         assert (o_data == ref_queue[0])
@@ -86,7 +86,7 @@ module bram_tree_tb;
     // Test Case 2: Enqueue nodes
     // Enqueue random values for QUEUE_SIZE times
     $display("\nTest Case 2: Enqueue Test");
-    for (i = 0; i < BRAM_TREE_QUEUE_SIZE; i++) begin
+    for (i = 0; i < QUEUE_SIZE; i++) begin
       random_value = $urandom_range(0, 1024);
       enqueue(random_value);
       assert (o_data == ref_queue[0])
@@ -99,7 +99,7 @@ module bram_tree_tb;
     // Test Case 3: Replace nodes
     // Replace root node for QUEUE_SIZE times
     $display("\nTest Case 3: Replace Test");
-    for (i = 0; i < BRAM_TREE_QUEUE_SIZE; i++) begin
+    for (i = 0; i < QUEUE_SIZE; i++) begin
       random_value = $urandom_range(0, 1024);
       replace(random_value);
       assert (o_data == ref_queue[0])
@@ -178,7 +178,7 @@ module bram_tree_tb;
       @(posedge CLK);
       i_wrt  = 0;
       i_read = 0;
-      repeat (6 * ($clog2(BRAM_TREE_QUEUE_SIZE + 1) + 1)) @(posedge CLK);
+      repeat (6 * ($clog2(QUEUE_SIZE + 1) + 1)) @(posedge CLK);
     end
   endtask
 
@@ -200,7 +200,7 @@ module bram_tree_tb;
       @(posedge CLK);
       i_wrt  = 0;
       i_read = 0;
-      repeat (6 * ($clog2(BRAM_TREE_QUEUE_SIZE + 1) + 1)) @(posedge CLK);
+      repeat (6 * ($clog2(QUEUE_SIZE + 1) + 1)) @(posedge CLK);
     end
   endtask
 
@@ -229,7 +229,7 @@ module bram_tree_tb;
       @(posedge CLK);
       i_wrt  = 0;
       i_read = 0;
-      repeat (6 * ($clog2(BRAM_TREE_QUEUE_SIZE + 1) + 1)) @(posedge CLK);
+      repeat (6 * ($clog2(QUEUE_SIZE + 1) + 1)) @(posedge CLK);
     end
   endtask
 
