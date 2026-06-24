@@ -101,7 +101,7 @@ module systolic_array #(
             IB[i]   <= MIN_VALUE;
           end
 
-          IB_greater_than_IB_next[i] && !(IB_greater_than_IB_next[i+1] || i == HALF_SIZE - 2) && (!(IB_greater_than_OB[i+1])): begin  // IB[i] > IB[i+1]
+          IB_greater_than_IB_next[i] && (!(IB_greater_than_IB_next[i+1]) || i == HALF_SIZE - 2) && (!(IB_greater_than_OB[i+1])): begin  // IB[i] > IB[i+1]
             // Swap IB[i] and IB[i+1]
             IB[i+1] <= IB[i];
             IB[i]   <= IB[i+1];

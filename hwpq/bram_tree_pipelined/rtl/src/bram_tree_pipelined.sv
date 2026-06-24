@@ -1,4 +1,4 @@
-module bram_tree #(
+module bram_tree_pipelined #(
     parameter integer QUEUE_SIZE = 7,
     parameter integer DATA_WIDTH = 16
 ) (
@@ -22,7 +22,7 @@ module bram_tree #(
   localparam integer NODES_NEEDED = (1 << TREE_DEPTH) - 1;  // number of actual slots needed for the queue
                                                             // to store the heap, need to caculate this so
                                                             // that we could take any arbitrary queue size
-  localparam integer ADDRESS_WIDTH = TREE_DEPTH - 1;  // address width of the BRAMs
+  localparam integer ADDRESS_WIDTH = $clog2(NODES_NEEDED)-1;  // address width of the BRAMs
 
   //-------------------------------------------------------------------------
   // Internal used wires and registers
@@ -34,8 +34,8 @@ module bram_tree #(
   logic [DATA_WIDTH-1:0] next_level_1[2];
 
   // Memory used wires and registers
-  logic [ADDRESS_WIDTH-1:0] addr_a[2:TREE_DEPTH-1];
-  logic [ADDRESS_WIDTH-1:0] addr_b[2:TREE_DEPTH-1];
+  logic [ADDRESS_WIDTH:0] addr_a[2:TREE_DEPTH-1];
+  logic [ADDRESS_WIDTH:0] addr_b[2:TREE_DEPTH-1];
   logic [DATA_WIDTH-1:0] dout_a[2:TREE_DEPTH-1];
   logic [DATA_WIDTH-1:0] dout_b[2:TREE_DEPTH-1];
   logic [DATA_WIDTH-1:0] din_a[2:TREE_DEPTH-1];
@@ -43,8 +43,8 @@ module bram_tree #(
   logic we_a[2:TREE_DEPTH-1];
   logic we_b[2:TREE_DEPTH-1];
 
-  logic [ADDRESS_WIDTH-1:0] next_addr_a[2:TREE_DEPTH-1];
-  logic [ADDRESS_WIDTH-1:0] next_addr_b[2:TREE_DEPTH-1];
+  logic [ADDRESS_WIDTH:0] next_addr_a[2:TREE_DEPTH-1];
+  logic [ADDRESS_WIDTH:0] next_addr_b[2:TREE_DEPTH-1];
   logic [DATA_WIDTH-1:0] next_din_a[2:TREE_DEPTH-1];
   logic [DATA_WIDTH-1:0] next_din_b[2:TREE_DEPTH-1];
   logic next_we_a[2:TREE_DEPTH-1];
@@ -95,7 +95,7 @@ module bram_tree #(
     for (i = 2; i < TREE_DEPTH; i++) begin : gen_bram  // Using BRAM starts from level 2
       rams_tdp_rf_rf #(
           .WIDTH(DATA_WIDTH),
-          .DEPTH((1 << i))
+          .DEPTH(NODES_NEEDED)
       ) bram_inst (
           .clka (CLK),
           .ena  (1'b1),
@@ -207,9 +207,9 @@ module bram_tree #(
     if (!RSTn) begin
       parent_lvl <= '0;
       parent_idx <= '0;
-      level_0 <= '0;
+      level_0 <= '1;
       for (itr_seq = 0; itr_seq < 2; itr_seq++) begin  // initialize 2 registers on level_1 
-        level_1[itr_seq] <= '0;
+        level_1[itr_seq] <= '1;
       end
       for (lvl_seq = 2; lvl_seq < TREE_DEPTH; lvl_seq++) begin  // initialize BRAMs' ports
         addr_a[lvl_seq] <= '0;
@@ -392,7 +392,9 @@ module bram_tree #(
     end else if (!i_wrt && i_read) begin  // dequeue
       next_queue_size = queue_size - 1;
     end else if (i_wrt && i_read) begin  // replace
-      if (queue_size == 0 && i_data != 0) begin  // this would be a special case for replace, function as enqueue
+      if (o_data == '1) begin //special case for following a reset, we need to replace all the values in 
+        next_queue_size = queue_size + 1;
+      end else if (queue_size == 0 && i_data != 0) begin  // this would be a special case for replace, function as enqueue
         next_queue_size = queue_size + 1;
       end else begin
         next_queue_size = queue_size;

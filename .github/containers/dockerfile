@@ -1,0 +1,11 @@
+FROM ubuntu:24.04
+LABEL org.opencontainers.image.source="https://github.com/upstream-owner/repo-name"
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y \
+    iverilog \
+    grep \
+    bash \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /work

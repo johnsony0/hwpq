@@ -43,10 +43,14 @@ module register_array_pipelined_tb;
   enq_mode_t                  current_mode;
 
   // Reference array for verification
-  logic      [DATA_WIDTH-1:0] ref_queue_enq_1  [$:QUEUE_SIZE-1];
-  logic      [DATA_WIDTH-1:0] ref_queue_enq_0  [$:QUEUE_SIZE-1];
-  logic      [DATA_WIDTH-1:0] ref_queue_prev   [$:QUEUE_SIZE-1];
-  logic      [DATA_WIDTH-1:0] saved_ref_queue  [$:QUEUE_SIZE-1];
+  logic [DATA_WIDTH-1:0] ref_queue_enq_1 [$:QUEUE_SIZE-1];
+  int                    ref_queue_enq_1_size = 0;
+
+  logic [DATA_WIDTH-1:0] ref_queue_enq_0 [$:QUEUE_SIZE-1];
+  int                    ref_queue_enq_0_size = 0;
+
+  logic [DATA_WIDTH-1:0] ref_queue_prev  [$:QUEUE_SIZE-1];
+  int                    ref_queue_prev_size = 0;
 
   // Test variables
   logic      [DATA_WIDTH-1:0] random_value;
@@ -237,33 +241,18 @@ module register_array_pipelined_tb;
     @(posedge CLK);
 
     // Initialize queue inside enqueue disabled module
+    $display("\nInitializing enqueue disabled module by replacing into it");
     for (int i = 0; i < QUEUE_SIZE; i++) begin
-      random_value = DATA_WIDTH'(($urandom & ((1 << DATA_WIDTH) - 1)) % 1025);
+      random_value = $urandom_range(1, 1023);
       ref_queue_enq_0.push_back(random_value);
+      ref_queue_enq_0_size++;
+      replace_init(random_value);
     end
-    ref_queue_enq_0.rsort();
-
-    //    $display("\nSorted queue contents:");
-    //    for (int i = 0; i < ref_queue_enq_0.size(); i++) begin
-    //      $display("ref_queue_enq_0[%0d] = %0d", i, ref_queue_enq_0[i]);
-    //    end
-
-    //    $display("\nInitializing enqueue disabled module by directly tap into it");
-    for (int i = 0; i < QUEUE_SIZE; i++) begin
-      u_RegisterArray_dis.stage1[i] = ref_queue_enq_0[i];
-    end
-    u_RegisterArray_dis.next_size = QUEUE_SIZE;
-    repeat (2) @(posedge CLK);
-
-    //    $display("\nRegisterArray_dis.queue contents after initialization:");
-    //    for (int i = 0; i < QUEUE_SIZE; i++) begin
-    //      $display("u_RegisterArray_dis.queue[%0d] = %0d", i, u_RegisterArray_dis.queue[i]);
-    //    end;
+    rsort_dis();
 
     // Test Case 5: Dequeue Test with ENQ_ENA disabled
     $display("\nTest Case 5: Dequeue Test (ENQ_ENA disabled)");
-    assert (o_full)
-    else $error("The queue should be filled by the intialization!");
+    assert (o_full) else $error("The queue should be filled by the intialization!");
     for (int i = 0; i < QUEUE_SIZE / 2; i++) begin
       dequeue();
       if (!o_empty) begin
@@ -289,8 +278,23 @@ module register_array_pipelined_tb;
     end
     assert (o_data == o_data_prev)
     else $error("The queue should not have change!");
-    assert (ref_queue_enq_0 == ref_queue_prev)
-    else $error("The queue should not have change!");
+    begin
+      bit queues_match;
+      bit error_flag;
+      queues_match = 1;
+      error_flag = 0;
+      if (ref_queue_enq_0_size != ref_queue_prev_size) begin
+        queues_match = 0;
+      end else begin
+        for (int i = 0; i < ref_queue_enq_0_size; i++) begin
+          if (ref_queue_enq_0[i] != ref_queue_prev[i]) begin
+            queues_match = 0;
+            error_flag = 1;
+          end
+        end
+      end
+      assert (!error_flag) else $error("The queue should not have change!");
+    end
     assert (!o_full && !o_empty)
     else $error("The queue should not do anything!");
 
@@ -346,16 +350,19 @@ module register_array_pipelined_tb;
     begin
       if (!o_full) begin
         if (current_mode == ENABLED) begin
-          i_wrt_ena  = 1;
+          i_wrt_ena = 1;
           i_read_ena = 0;
           i_data_ena = value;
-          ref_queue_enq_1.push_back(value);
-          ref_queue_enq_1.rsort();
+
+          ref_queue_enq_1[ref_queue_enq_1_size] = value;
+          ref_queue_enq_1_size++;
+      
+          rsort_ena();
         end else if (current_mode == DISABLED) begin
-          i_wrt_dis  = 1;
+          i_wrt_dis = 1;
           i_read_dis = 0;
           i_data_dis = value;
-          //          $display("Enqueue attempt with ENQ_ENA disabled - should have no effect");
+//          $display("Enqueue attempt with ENQ_ENA disabled - should have no effect");
         end
       end else begin
         $display("Enqueue: Queue full, skipping enqueue");
@@ -366,7 +373,7 @@ module register_array_pipelined_tb;
       i_wrt_dis  = 0;
       i_read_dis = 0;
       if (current_mode == ENABLED) repeat (2) @(posedge CLK);
-      else if (current_mode == DISABLED) repeat (2) @(posedge CLK);  // should have no effects
+      else if (current_mode == DISABLED) repeat (2) @(posedge CLK); // should have no effects
     end
   endtask
 
@@ -377,14 +384,24 @@ module register_array_pipelined_tb;
           i_wrt_ena  = 0;
           i_read_ena = 1;
           i_data_ena = 0;
-          ref_queue_enq_1.pop_front();
-          ref_queue_enq_1.rsort();
+
+          for (int i = 0; i < ref_queue_enq_1_size - 1; i++) begin
+            ref_queue_enq_1[i] = ref_queue_enq_1[i+1];
+          end
+          ref_queue_enq_1[ref_queue_enq_1_size-1] = '0; 
+          ref_queue_enq_1_size--;
+
         end else if (current_mode == DISABLED) begin
           i_wrt_dis  = 0;
           i_read_dis = 1;
           i_data_dis = 0;
-          ref_queue_enq_0.pop_front();
-          ref_queue_enq_0.rsort();
+
+          for (int i = 0; i < ref_queue_enq_0_size - 1; i++) begin
+            ref_queue_enq_0[i] = ref_queue_enq_0[i+1];
+          end
+          ref_queue_enq_0[ref_queue_enq_0_size-1] = '0; 
+          ref_queue_enq_0_size--;
+
         end
       end else begin
         $display("Dequeue: Queue empty, skipping dequeue");
@@ -406,23 +423,26 @@ module register_array_pipelined_tb;
         i_read_ena = 1;
         i_data_ena = value;
         if (o_empty) begin
-          ref_queue_enq_1.push_back(value);
+          ref_queue_enq_1[ref_queue_enq_1_size] = value;
+          ref_queue_enq_1_size++;
+          
+          rsort_ena();
         end else begin
-          ref_queue_enq_1.pop_front();
-          ref_queue_enq_1.push_back(value);
+          ref_queue_enq_1[0] = value;
+          rsort_ena();
         end
-        ref_queue_enq_1.rsort();
       end else if (current_mode == DISABLED) begin
         i_wrt_dis  = 1;
         i_read_dis = 1;
         i_data_dis = value;
         if (o_empty) begin
-          ref_queue_enq_0.push_back(value);
+          ref_queue_enq_0[ref_queue_enq_0_size] = value;
+          ref_queue_enq_0_size++;
+          rsort_dis();
         end else begin
-          ref_queue_enq_0.pop_front();
-          ref_queue_enq_0.push_back(value);
+          ref_queue_enq_0[0] = value;
+          rsort_dis();
         end
-        ref_queue_enq_0.rsort();
       end
       @(posedge CLK);
       i_wrt_ena  = 0;
@@ -431,6 +451,53 @@ module register_array_pipelined_tb;
       i_read_dis = 0;
       if (current_mode == ENABLED) repeat (2) @(posedge CLK);
       else if (current_mode == DISABLED) repeat (2) @(posedge CLK);
+    end
+  endtask
+
+  task automatic replace_init(input logic [DATA_WIDTH-1:0] value);
+    begin
+      if (current_mode == ENABLED) begin
+        i_wrt_ena  = 1;
+        i_read_ena = 1;
+        i_data_ena = value;
+      end else if (current_mode == DISABLED) begin
+        i_wrt_dis  = 1;
+        i_read_dis = 1;
+        i_data_dis = value;
+      end
+      @(posedge CLK);
+      i_wrt_ena  = 0;
+      i_read_ena = 0;
+      i_wrt_dis  = 0;
+      i_read_dis = 0;
+      if (current_mode == ENABLED) @(posedge CLK);
+      else if (current_mode == DISABLED) @(posedge CLK);
+    end
+  endtask
+
+  task automatic rsort_ena();
+    logic [DATA_WIDTH-1:0] temp_val;
+    for (int i = 0; i < ref_queue_enq_1_size; i++) begin
+      for (int j = i + 1; j < ref_queue_enq_1_size; j++) begin
+        if (ref_queue_enq_1[i] < ref_queue_enq_1[j]) begin
+          temp_val           = ref_queue_enq_1[i];
+          ref_queue_enq_1[i] = ref_queue_enq_1[j];
+          ref_queue_enq_1[j] = temp_val;
+        end
+      end
+    end
+  endtask
+
+  task automatic rsort_dis();
+    logic [DATA_WIDTH-1:0] temp_val;
+    for (int i = 0; i < ref_queue_enq_0_size; i++) begin
+      for (int j = i + 1; j < ref_queue_enq_0_size; j++) begin
+        if (ref_queue_enq_0[i] < ref_queue_enq_0[j]) begin
+          temp_val           = ref_queue_enq_0[i];
+          ref_queue_enq_0[i] = ref_queue_enq_0[j];
+          ref_queue_enq_0[j] = temp_val;
+        end
+      end
     end
   endtask
 

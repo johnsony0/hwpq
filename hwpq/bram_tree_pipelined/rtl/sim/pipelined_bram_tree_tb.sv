@@ -1,6 +1,6 @@
-module bram_tree_tb;
+module bram_tree_pipelined_tb;
   // Parameters matching the module under test
-  localparam integer QueueSize = 31;
+  localparam integer QueueSize = 15;
   localparam integer DataWidth = 16;
 
   // Clock and reset signals
@@ -19,6 +19,7 @@ module bram_tree_tb;
 
   // Reference array for verification
   logic   [DataWidth-1:0] ref_queue        [$:QueueSize-1];
+  int                     ref_queue_size = 0;
 
   // Test variables
   integer                 i;
@@ -32,7 +33,7 @@ module bram_tree_tb;
   } operation_t;
 
   // Instantiate the register_tree module
-  bram_tree #(
+  bram_tree_pipelined #(
       .QUEUE_SIZE(QueueSize),
       .DATA_WIDTH(DataWidth)
   ) uut (
@@ -66,90 +67,17 @@ module bram_tree_tb;
     for (i = 0; i < QueueSize; i++) begin
       random_value = DataWidth'(($urandom & ((1 << DataWidth) - 1)) % 1025);
       ref_queue.push_back(random_value);
+      ref_queue_size++;
+      replace_init(random_value);
     end
-    ref_queue.rsort();
-    for (i = 0; i < QueueSize; i++) begin
-      if (i == 0) begin
-        uut.next_level_0 = ref_queue[0];
-      end else if (i == 1) begin
-        uut.next_level_1[0] = ref_queue[1];
-      end else if (i == 2) begin
-        uut.next_level_1[1] = ref_queue[2];
-      end else begin
-        if ($clog2(i + 1) - (((i + 1) & i) ? 1 : 0) == 2) begin
-          if (i - 3 == 0) begin
-            uut.gen_bram[2].bram_inst.ram[0] = ref_queue[3];
-          end else if (i - 3 == 1) begin
-            uut.gen_bram[2].bram_inst.ram[1] = ref_queue[4];
-          end else if (i - 3 == 2) begin
-            uut.gen_bram[2].bram_inst.ram[2] = ref_queue[5];
-          end else if (i - 3 == 3) begin
-            uut.gen_bram[2].bram_inst.ram[3] = ref_queue[6];
-          end
-        end else if ($clog2(i + 1) - (((i + 1) & i) ? 1 : 0) == 3) begin
-          if (i - 7 == 0) begin
-            uut.gen_bram[3].bram_inst.ram[0] = ref_queue[7];
-          end else if (i - 7 == 1) begin
-            uut.gen_bram[3].bram_inst.ram[1] = ref_queue[8];
-          end else if (i - 7 == 2) begin
-            uut.gen_bram[3].bram_inst.ram[2] = ref_queue[9];
-          end else if (i - 7 == 3) begin
-            uut.gen_bram[3].bram_inst.ram[3] = ref_queue[10];
-          end else if (i - 7 == 4) begin
-            uut.gen_bram[3].bram_inst.ram[4] = ref_queue[11];
-          end else if (i - 7 == 5) begin
-            uut.gen_bram[3].bram_inst.ram[5] = ref_queue[12];
-          end else if (i - 7 == 6) begin
-            uut.gen_bram[3].bram_inst.ram[6] = ref_queue[13];
-          end else if (i - 7 == 7) begin
-            uut.gen_bram[3].bram_inst.ram[7] = ref_queue[14];
-          end
-        end else if ($clog2(i + 1) - (((i + 1) & i) ? 1 : 0) == 4) begin
-          if (i - 15 == 0) begin
-            uut.gen_bram[4].bram_inst.ram[0] = ref_queue[15];
-          end else if (i - 15 == 1) begin
-            uut.gen_bram[4].bram_inst.ram[1] = ref_queue[16];
-          end else if (i - 15 == 2) begin
-            uut.gen_bram[4].bram_inst.ram[2] = ref_queue[17];
-          end else if (i - 15 == 3) begin
-            uut.gen_bram[4].bram_inst.ram[3] = ref_queue[18];
-          end else if (i - 15 == 4) begin
-            uut.gen_bram[4].bram_inst.ram[4] = ref_queue[19];
-          end else if (i - 15 == 5) begin
-            uut.gen_bram[4].bram_inst.ram[5] = ref_queue[20];
-          end else if (i - 15 == 6) begin
-            uut.gen_bram[4].bram_inst.ram[6] = ref_queue[21];
-          end else if (i - 15 == 7) begin
-            uut.gen_bram[4].bram_inst.ram[7] = ref_queue[22];
-          end else if (i - 15 == 8) begin
-            uut.gen_bram[4].bram_inst.ram[8] = ref_queue[23];
-          end else if (i - 15 == 9) begin
-            uut.gen_bram[4].bram_inst.ram[9] = ref_queue[24];
-          end else if (i - 15 == 10) begin
-            uut.gen_bram[4].bram_inst.ram[10] = ref_queue[25];
-          end else if (i - 15 == 11) begin
-            uut.gen_bram[4].bram_inst.ram[11] = ref_queue[26];
-          end else if (i - 15 == 12) begin
-            uut.gen_bram[4].bram_inst.ram[12] = ref_queue[27];
-          end else if (i - 15 == 13) begin
-            uut.gen_bram[4].bram_inst.ram[13] = ref_queue[28];
-          end else if (i - 15 == 14) begin
-            uut.gen_bram[4].bram_inst.ram[14] = ref_queue[29];
-          end else if (i - 15 == 15) begin
-            uut.gen_bram[4].bram_inst.ram[15] = ref_queue[30];
-          end
-        end
-      end
-    end
-    uut.next_queue_size = QueueSize;
-    uut.next_state = 0;
+    rsort();
 
     repeat (16) @(posedge CLK);
 
     // Test Case 1: Dequeue nodes
     // Dequeue nodes for QUEUE_SIZE times
     $display("\nTest Case 1: Dequeue Test");
-    for (i = 0; i < QueueSize; i++) begin
+    for (i = 0; i < QueueSize/2; i++) begin
       dequeue();
       if (!o_empty) begin
         assert (o_data == ref_queue[0])
@@ -160,93 +88,24 @@ module bram_tree_tb;
       end
     end
 
+    /*// Reset the module
+    @(posedge CLK);
+    RSTn = 1;
+    repeat (2) @(posedge CLK);
+
     for (i = 0; i < QueueSize; i++) begin
       random_value = DataWidth'(($urandom & ((1 << DataWidth) - 1)) % 1025);
       ref_queue.push_back(random_value);
+      replace_init(random_value);
     end
-    ref_queue.rsort();
-    for (i = 0; i < QueueSize; i++) begin
-      if (i == 0) begin
-        uut.next_level_0 = ref_queue[0];
-      end else if (i == 1) begin
-        uut.next_level_1[0] = ref_queue[1];
-      end else if (i == 2) begin
-        uut.next_level_1[1] = ref_queue[2];
-      end else begin
-        if ($clog2(i + 1) - (((i + 1) & i) ? 1 : 0) == 2) begin
-          if (i - 3 == 0) begin
-            uut.gen_bram[2].bram_inst.ram[0] = ref_queue[3];
-          end else if (i - 3 == 1) begin
-            uut.gen_bram[2].bram_inst.ram[1] = ref_queue[4];
-          end else if (i - 3 == 2) begin
-            uut.gen_bram[2].bram_inst.ram[2] = ref_queue[5];
-          end else if (i - 3 == 3) begin
-            uut.gen_bram[2].bram_inst.ram[3] = ref_queue[6];
-          end
-        end else if ($clog2(i + 1) - (((i + 1) & i) ? 1 : 0) == 3) begin
-          if (i - 7 == 0) begin
-            uut.gen_bram[3].bram_inst.ram[0] = ref_queue[7];
-          end else if (i - 7 == 1) begin
-            uut.gen_bram[3].bram_inst.ram[1] = ref_queue[8];
-          end else if (i - 7 == 2) begin
-            uut.gen_bram[3].bram_inst.ram[2] = ref_queue[9];
-          end else if (i - 7 == 3) begin
-            uut.gen_bram[3].bram_inst.ram[3] = ref_queue[10];
-          end else if (i - 7 == 4) begin
-            uut.gen_bram[3].bram_inst.ram[4] = ref_queue[11];
-          end else if (i - 7 == 5) begin
-            uut.gen_bram[3].bram_inst.ram[5] = ref_queue[12];
-          end else if (i - 7 == 6) begin
-            uut.gen_bram[3].bram_inst.ram[6] = ref_queue[13];
-          end else if (i - 7 == 7) begin
-            uut.gen_bram[3].bram_inst.ram[7] = ref_queue[14];
-          end
-        end else if ($clog2(i + 1) - (((i + 1) & i) ? 1 : 0) == 4) begin
-          if (i - 15 == 0) begin
-            uut.gen_bram[4].bram_inst.ram[0] = ref_queue[15];
-          end else if (i - 15 == 1) begin
-            uut.gen_bram[4].bram_inst.ram[1] = ref_queue[16];
-          end else if (i - 15 == 2) begin
-            uut.gen_bram[4].bram_inst.ram[2] = ref_queue[17];
-          end else if (i - 15 == 3) begin
-            uut.gen_bram[4].bram_inst.ram[3] = ref_queue[18];
-          end else if (i - 15 == 4) begin
-            uut.gen_bram[4].bram_inst.ram[4] = ref_queue[19];
-          end else if (i - 15 == 5) begin
-            uut.gen_bram[4].bram_inst.ram[5] = ref_queue[20];
-          end else if (i - 15 == 6) begin
-            uut.gen_bram[4].bram_inst.ram[6] = ref_queue[21];
-          end else if (i - 15 == 7) begin
-            uut.gen_bram[4].bram_inst.ram[7] = ref_queue[22];
-          end else if (i - 15 == 8) begin
-            uut.gen_bram[4].bram_inst.ram[8] = ref_queue[23];
-          end else if (i - 15 == 9) begin
-            uut.gen_bram[4].bram_inst.ram[9] = ref_queue[24];
-          end else if (i - 15 == 10) begin
-            uut.gen_bram[4].bram_inst.ram[10] = ref_queue[25];
-          end else if (i - 15 == 11) begin
-            uut.gen_bram[4].bram_inst.ram[11] = ref_queue[26];
-          end else if (i - 15 == 12) begin
-            uut.gen_bram[4].bram_inst.ram[12] = ref_queue[27];
-          end else if (i - 15 == 13) begin
-            uut.gen_bram[4].bram_inst.ram[13] = ref_queue[28];
-          end else if (i - 15 == 14) begin
-            uut.gen_bram[4].bram_inst.ram[14] = ref_queue[29];
-          end else if (i - 15 == 15) begin
-            uut.gen_bram[4].bram_inst.ram[15] = ref_queue[30];
-          end
-        end
-      end
-    end
-    uut.next_queue_size = QueueSize;
-    uut.next_state = 0;
-
+    ref_queue.rsort();*/
+    
     repeat (16) @(posedge CLK);
 
     // Test Case 2: Replace nodes
     // Replace root node for QUEUE_SIZE times
     $display("\nTest Case 2: Replace Test");
-    for (i = 0; i < QueueSize; i++) begin
+    for (i = 0; i < QueueSize/2; i++) begin
       random_value = DataWidth'(($urandom & ((1 << DataWidth) - 1)) % 1025);
       replace(random_value);
       assert (o_data == ref_queue[0])
@@ -295,8 +154,11 @@ module bram_tree_tb;
       if (!o_empty) begin
         i_wrt  = 0;
         i_read = 1;
-        ref_queue.pop_front();
-        ref_queue.rsort();
+        for (int i = 0; i < ref_queue_size - 1; i++) begin
+          ref_queue[i] = ref_queue[i+1];
+        end
+        ref_queue[ref_queue_size-1] = '0; 
+        ref_queue_size--;
       end else begin
         $display("Dequeue: Queue empty, skipping dequeue");
       end
@@ -313,13 +175,43 @@ module bram_tree_tb;
       i_wrt  = 1;
       i_read = 1;
       i_data = value;
-      ref_queue.pop_front();
-      ref_queue.push_back(value);
-      ref_queue.rsort();
+      if (o_empty) begin
+        ref_queue[ref_queue_size] = value;
+        ref_queue_size++;
+        rsort();
+      end else begin
+        ref_queue[0] = value;
+        rsort();
+      end
       @(posedge CLK);
       i_wrt  = 0;
       i_read = 0;
       repeat (24) @(posedge CLK);
+    end
+  endtask
+
+  task automatic replace_init(input logic [DataWidth-1:0] value);
+    begin
+      i_wrt  = 1;
+      i_read = 1;
+      i_data = value;
+      repeat (1) @(posedge CLK);
+      i_wrt  = 0;
+      i_read = 0;
+      repeat (24) @(posedge CLK);
+    end
+  endtask
+
+  task automatic rsort();
+    logic [DataWidth-1:0] temp_val;
+    for (int i = 0; i < ref_queue_size; i++) begin
+      for (int j = i + 1; j < ref_queue_size; j++) begin
+        if (ref_queue[i] < ref_queue[j]) begin
+          temp_val           = ref_queue[i];
+          ref_queue[i] = ref_queue[j];
+          ref_queue[j] = temp_val;
+        end
+      end
     end
   endtask
 

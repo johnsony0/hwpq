@@ -40,3 +40,7 @@ hwpq/register_array/rtl_elaboration/
 
 # MacOS
 .DS_Store
+
+obj_dir
+*.vvp
+*.vcd

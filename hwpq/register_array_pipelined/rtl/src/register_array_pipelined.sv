@@ -33,7 +33,11 @@ module register_array_pipelined #(
 
   generate
     for (genvar i = 0; i < QUEUE_SIZE; i++) begin : l_gen_reset_queue
-      assign reset_queue[i] = '0;
+      if (!ENQ_ENA) begin
+        assign reset_queue[i] = '1;
+      end else begin
+        assign reset_queue[i] = '0;
+      end
     end
   endgenerate
 
@@ -48,11 +52,15 @@ module register_array_pipelined #(
 
   always_ff @(posedge i_CLK or negedge i_RSTn) begin
     if (!i_RSTn) begin
-      queue <= reset_queue;
+      for (int i = 0; i < QUEUE_SIZE; i++) begin
+        queue[i] <= reset_queue[i];
+      end
       even_cycle_flag <= 1'b1;
       size <= '0;
     end else begin
-      queue <= next_queue;
+      for (int i = 0; i < QUEUE_SIZE; i++) begin
+        queue[i] <= next_queue[i];
+      end
       even_cycle_flag <= next_even_cycle_flag;
       size <= next_size;
     end
@@ -62,25 +70,32 @@ module register_array_pipelined #(
     case ({
       enqueue, dequeue, replace
     })
-      3'b100: next_size = size + 1;
-      3'b010: next_size = size - 1;
+      3'b100: 
+      next_size = (full) ? size :
+                  size + 1;
+      3'b010: 
+      next_size = (empty) ? size :
+                  size - 1;
       3'b001:
-      next_size = (size == '0 && i_data != '0) ? size+1 :
-                         (size != '0 && i_data == '0) ? size-1 :
-                          size;
+      next_size = (o_data == '1 && !ENQ_ENA)    ? size+1 : //special case since reset fills up the pq with highest prio item
+                  (size == '0 && i_data != '0) ? size+1 :
+                  (size != '0 && i_data == '0) ? size-1 :
+                   size;
       default: next_size = size;
     endcase
   end
 
   always_comb begin : queue_operation
-    automatic int empty_checked;
+    int empty_checked;
     empty_checked = QUEUE_SIZE - 1;
     case ({
       enqueue, dequeue, replace
     })
       3'b100: begin  // Enqueue operation (will only be active if ENQ_ENA is high)
         // Shift entire queue to the right by 1
-        stage1 = queue;
+        for (int i = 0; i < QUEUE_SIZE; i++) begin
+          stage1[i] = queue[i];
+        end
         for (int i = QUEUE_SIZE - 1; i >= 0; i--) begin
           empty_checked = (queue[i] == '0) ? i : empty_checked;
         end
@@ -90,21 +105,31 @@ module register_array_pipelined #(
         stage1[0] = i_data;
       end
       3'b010: begin
-        stage1 = queue;
+        for (int i = 0; i < QUEUE_SIZE; i++) begin
+          stage1[i] = queue[i];
+        end
         stage1[0] = '0;
       end
       3'b001: begin
-        stage1 = queue;
+        for (int i = 0; i < QUEUE_SIZE; i++) begin
+          stage1[i] = queue[i];
+        end
         stage1[0] = i_data;
       end
-      default: stage1 = queue;
+      default: begin
+        for (int i = 0; i < QUEUE_SIZE; i++) begin
+          stage1[i] = queue[i];
+        end
+      end
     endcase
   end
 
   always_comb begin : next_queue_calc
     case (even_cycle_flag)
       1'b1: begin  // Even cycle
-        next_queue = stage1;
+        for (int i = 0; i < QUEUE_SIZE; i++) begin
+          next_queue[i] = stage1[i];
+        end
         for (int i = 0; i < PAIR_COUNT; i++) begin
           if (stage1[2*i+1] > stage1[2*i]) begin
             // Swap if element at odd index is greater than element at even index
@@ -119,7 +144,9 @@ module register_array_pipelined #(
       end
 
       1'b0: begin  // Odd cycle
-        next_queue = stage1;
+        for (int i = 0; i < QUEUE_SIZE; i++) begin
+          next_queue[i] = stage1[i];
+        end
         for (int i = 0; i < PAIR_COUNT - 1; i++) begin
           if (stage1[2*i+2] > stage1[2*i+1]) begin
             // Swap if element at even index is greater than previous odd index
@@ -134,7 +161,9 @@ module register_array_pipelined #(
       end
 
       default: begin
-        next_queue = stage1;
+        for (int i = 0; i < QUEUE_SIZE; i++) begin
+          next_queue[i] = stage1[i];
+        end
         next_even_cycle_flag = 1'b1;
       end
     endcase

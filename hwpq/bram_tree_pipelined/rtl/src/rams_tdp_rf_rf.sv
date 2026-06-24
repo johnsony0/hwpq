@@ -21,6 +21,13 @@ module rams_tdp_rf_rf #(
 
   logic [WIDTH-1:0] ram[DEPTH-1:0];
 
+  initial begin
+    // on initialization, set all values to be of highest priority
+    for (int i = 0; i < DEPTH; i++) begin
+      ram[i] = '1;
+    end
+  end
+
   always @(posedge clka) begin
     if (ena) begin
       if (wea) ram[addra] <= dia;
