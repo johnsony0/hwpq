@@ -114,6 +114,8 @@ module register_tree_tb;
   // Clock generation: 10ns period
   always #5 CLK <= ~CLK;
 
+  int error_count = 0;
+
   initial begin
     // Initialize signals
     CLK = 0;
@@ -143,16 +145,16 @@ module register_tree_tb;
       random_value = $urandom_range(1, 1023);
       enqueue(random_value);
     end
-    assert (o_full) else $error("The queue should be filled by the intialization!");
+    assert (o_full) else begin error_count++; $error("The queue should be filled by the intialization!"); end;
 
     // Test Case 1: Dequeue nodes with ENQ_ENA enabled
     $display("\nTest Case 1: Dequeue Test (ENQ_ENA enabled)");
     for (int i = 0; i < QUEUE_SIZE / 2; i++) begin
       dequeue();
       if (!o_empty) begin
-        assert (o_data == ref_queue_enq_1[0]) else $error("Dequeue: Node value mismatch -> expected %d, got %d", ref_queue_enq_1[0], o_data);
+        assert (o_data == ref_queue_enq_1[0]) else begin error_count++; $error("Dequeue: Node value mismatch -> expected %d, got %d", ref_queue_enq_1[0], o_data); end;
       end else begin
-        assert (o_data == '0) else $error("Dequeue: Node value mismatch -> expected %d, got %d", '0, o_data);
+        assert (o_data == '0) else begin error_count++; $error("Dequeue: Node value mismatch -> expected %d, got %d", '0, o_data); end;
       end
     end
 
@@ -161,16 +163,16 @@ module register_tree_tb;
     for (int i = 0; i < QUEUE_SIZE / 2; i++) begin
       random_value = $urandom_range(1, 1023);
       enqueue(random_value);
-      assert (o_data == ref_queue_enq_1[0]) else $error("Enqueue: Node value mismatch -> expected %d, got %d", ref_queue_enq_1[0], o_data);
+      assert (o_data == ref_queue_enq_1[0]) else begin error_count++; $error("Enqueue: Node value mismatch -> expected %d, got %d", ref_queue_enq_1[0], o_data); end;
     end
-    assert (o_full) else $error("The queue should be filled after enqueue!");
+    assert (o_full) else begin error_count++; $error("The queue should be filled after enqueue!"); end;
 
     // Test Case 3: Replace nodes with ENQ_ENA enabled
     $display("\nTest Case 3: Replace Test (ENQ_ENA enabled)");
     for (int i = 0; i < QUEUE_SIZE / 2; i++) begin
       random_value = $urandom_range(1, 1023);
       replace(random_value);
-      assert (o_data == ref_queue_enq_1[0]) else $error("Replace: Node value mismatch -> expected %d, got %d", ref_queue_enq_1[0], o_data);
+      assert (o_data == ref_queue_enq_1[0]) else begin error_count++; $error("Replace: Node value mismatch -> expected %d, got %d", ref_queue_enq_1[0], o_data); end;
     end
 
     // Test case 4: Random opertaion for 50 times
@@ -181,20 +183,20 @@ module register_tree_tb;
         ENQUEUE: begin
           random_value = $urandom_range(1, 1023);
           enqueue(random_value);
-          assert (o_data == ref_queue_enq_1[0]) else $error("Random Enqueue: Node value mismatch -> expected %d, got %d", ref_queue_enq_1[0], o_data);
+          assert (o_data == ref_queue_enq_1[0]) else begin error_count++; $error("Random Enqueue: Node value mismatch -> expected %d, got %d", ref_queue_enq_1[0], o_data); end;
         end
         DEQUEUE: begin
           dequeue();
           if (!o_empty) begin
-            assert (o_data == ref_queue_enq_1[0]) else $error("Random Dequeue: Node value mismatch -> expected %d, got %d", ref_queue_enq_1[0], o_data);
+            assert (o_data == ref_queue_enq_1[0]) else begin error_count++; $error("Random Dequeue: Node value mismatch -> expected %d, got %d", ref_queue_enq_1[0], o_data); end;
           end else begin
-            assert (o_data == '0) else $error("Random Dequeue: Node value mismatch -> expected %d, got %d", '0, o_data);
+            assert (o_data == '0) else begin error_count++; $error("Random Dequeue: Node value mismatch -> expected %d, got %d", '0, o_data); end;
           end
         end
         REPLACE: begin
           random_value = $urandom_range(1, 1023);
           replace(random_value);
-          assert (o_data == ref_queue_enq_1[0]) else $error("Random Replace: Node value mismatch -> expected %d, got %d", ref_queue_enq_1[0], o_data);
+          assert (o_data == ref_queue_enq_1[0]) else begin error_count++; $error("Random Replace: Node value mismatch -> expected %d, got %d", ref_queue_enq_1[0], o_data); end;
         end
       endcase
     end
@@ -224,16 +226,16 @@ module register_tree_tb;
     // Test Case 4: Dequeue Test with ENQ_ENA disabled
     $display("\nTest Case 4: Dequeue Test (ENQ_ENA disabled)");
     assert (o_full)
-    else $error("The queue should be filled by the intialization!");
+    else begin error_count++; $error("The queue should be filled by the intialization!"); end;
     for (int i = 0; i < QUEUE_SIZE / 2; i++) begin
       dequeue();
       if (!o_empty) begin
         assert (o_data == ref_queue_enq_0[0])
         else
-          $error("Dequeue: Node value mismatch -> expected %d, got %d", ref_queue_enq_0[0], o_data);
+          begin error_count++; $error("Dequeue: Node value mismatch -> expected %d, got %d", ref_queue_enq_0[0], o_data); end;
       end else begin
         assert (o_data == 'd0)
-        else $error("Dequeue: Node value mismatch -> expected %d, got %d", 'd0, o_data);
+        else begin error_count++; $error("Dequeue: Node value mismatch -> expected %d, got %d", 'd0, o_data); end;
       end
     end
 
@@ -246,9 +248,9 @@ module register_tree_tb;
       enqueue(random_value);
       assert (o_data == ref_queue_enq_0[0])
       else
-        $error("Enqueue: Node value mismatch -> expected %d, got %d", ref_queue_enq_0[0], o_data);
+        begin error_count++; $error("Enqueue: Node value mismatch -> expected %d, got %d", ref_queue_enq_0[0], o_data); end;
     end
-    assert (o_data == o_data_prev) else $error("The queue should not have change!");
+    assert (o_data == o_data_prev) else begin error_count++; $error("The queue should not have change!"); end;
     begin
       bit queues_match;
       bit error_flag;
@@ -264,9 +266,9 @@ module register_tree_tb;
           end
         end
       end
-      assert (!error_flag) else $error("The queue should not have change!");
+      assert (!error_flag) else begin error_count++; $error("The queue should not have change!"); end;
     end
-    assert (!o_full && !o_empty) else $error("The queue should not do anything!");
+    assert (!o_full && !o_empty) else begin error_count++; $error("The queue should not do anything!"); end;
 
     // Test Case 6: Test Replace operation with ENQ_ENA disabled
     $display("\nTest Case 6: Replace Test (ENQ_ENA disabled)");
@@ -275,7 +277,7 @@ module register_tree_tb;
       replace(random_value);
       assert (o_data == ref_queue_enq_0[0])
       else
-        $error("Replace: Node value mismatch -> expected %d, got %d", ref_queue_enq_0[0], o_data);
+        begin error_count++; $error("Replace: Node value mismatch -> expected %d, got %d", ref_queue_enq_0[0], o_data); end;
     end
 
     // Test case 8: Random opertaion for 50 times
@@ -288,14 +290,14 @@ module register_tree_tb;
           if (!o_empty) begin
             assert (o_data == ref_queue_enq_0[0])
             else
-              $error(
+              begin error_count++; $error(
                   "Random Dequeue: Node value mismatch -> expected %d, got %d",
                   ref_queue_enq_0[0],
                   o_data
-              );
+              ); end;
           end else begin
             assert (o_data == '0)
-            else $error("Random Dequeue: Node value mismatch -> expected %d, got %d", '0, o_data);
+            else begin error_count++; $error("Random Dequeue: Node value mismatch -> expected %d, got %d", '0, o_data); end;
           end
         end
         REPLACE: begin
@@ -303,17 +305,22 @@ module register_tree_tb;
           replace(random_value);
           assert (o_data == ref_queue_enq_0[0])
           else
-            $error(
+            begin error_count++; $error(
                 "Random Replace: Node value mismatch -> expected %d, got %d",
                 ref_queue_enq_0[0],
                 o_data
-            );
+            ); end;
         end
       endcase
     end
 
-    $display("\nTest completed!");
-    $finish;
+    if (error_count == 0) begin
+      $display("\nTest completed!");
+      $finish;
+    end else begin
+      $display("\n%0d error(s) detected during simulation.", error_count);
+      $fatal(1, "Test FAILED with %0d error(s).", error_count);
+    end
   end
 
   task automatic enqueue(input logic [DATA_WIDTH-1:0] value);

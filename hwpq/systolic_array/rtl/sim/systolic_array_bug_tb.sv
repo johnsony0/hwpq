@@ -50,6 +50,8 @@ module systolic_array_tb;
   // Clock generation: 10ns period
   always #5 CLK <= ~CLK;
 
+  int error_count = 0;
+
   initial begin
     // Initialize signals
     CLK = 0;
@@ -103,10 +105,10 @@ module systolic_array_tb;
       dequeue();
       if (!o_empty) begin
         assert (o_data == ref_queue[0])
-        else $error("Dequeue: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data);
+        else begin error_count++; $error("Dequeue: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data); end;
       end else begin
         assert (o_data == '0)
-        else $error("Dequeue: Node f value mismatch -> expected %d, got %d", '0, o_data);
+        else begin error_count++; $error("Dequeue: Node f value mismatch -> expected %d, got %d", '0, o_data); end;
       end
     end
 
@@ -152,10 +154,10 @@ module systolic_array_tb;
       dequeue();
       if (!o_empty) begin
         assert (o_data == ref_queue[0])
-        else $error("Dequeue: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data);
+        else begin error_count++; $error("Dequeue: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data); end;
       end else begin
         assert (o_data == '0)
-        else $error("Dequeue: Node f value mismatch -> expected %d, got %d", '0, o_data);
+        else begin error_count++; $error("Dequeue: Node f value mismatch -> expected %d, got %d", '0, o_data); end;
       end
     end
 
@@ -200,10 +202,10 @@ module systolic_array_tb;
       dequeue();
       if (!o_empty) begin
         assert (o_data == ref_queue[0])
-        else $error("Dequeue: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data);
+        else begin error_count++; $error("Dequeue: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data); end;
       end else begin
         assert (o_data == '0)
-        else $error("Dequeue: Node f value mismatch -> expected %d, got %d", '0, o_data);
+        else begin error_count++; $error("Dequeue: Node f value mismatch -> expected %d, got %d", '0, o_data); end;
       end
     end
 
@@ -249,15 +251,20 @@ module systolic_array_tb;
       dequeue();
       if (!o_empty) begin
         assert (o_data == ref_queue[0])
-        else $error("Dequeue: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data);
+        else begin error_count++; $error("Dequeue: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data); end;
       end else begin
         assert (o_data == '0)
-        else $error("Dequeue: Node f value mismatch -> expected %d, got %d", '0, o_data);
+        else begin error_count++; $error("Dequeue: Node f value mismatch -> expected %d, got %d", '0, o_data); end;
       end
     end
 
-    $display("\nTest completed! ");
-    $finish;
+    if (error_count == 0) begin
+      $display("\nTest completed!");
+      $finish;
+    end else begin
+      $display("\n%0d error(s) detected during simulation.", error_count);
+      $fatal(1, "Test FAILED with %0d error(s).", error_count);
+    end
   end
 
   // Task to read root node
