@@ -8,8 +8,8 @@
                enqueue, dequeue, and replace operations.
   Parameters: QUEUE_SIZE - Maximum number of elements in the sub-tree
               DATA_WIDTH - Bit width of data elements
-  Inputs: CLK - System clock
-          RSTn - Active-low reset signal
+  Inputs: i_CLK - System clock
+          i_RSTn - Active-low reset signal
           i_wrt - Write/insert command (enqueue operation)
           i_read - Read/pop command (dequeue operation)
           i_data - Input data to be inserted (or used for replace)
@@ -23,8 +23,8 @@ module pipelined_bram_tree #(
     parameter integer QUEUE_SIZE = 7,
     parameter integer DATA_WIDTH = 16
 ) (
-    input  logic                  CLK,
-    input  logic                  RSTn,
+    input  logic                  i_CLK,
+    input  logic                  i_RSTn,
     // Inputs
     input  logic                  i_wrt,    // Write/insert command
     input  logic                  i_read,   // Read/pop command
@@ -125,13 +125,13 @@ module pipelined_bram_tree #(
           .WIDTH(DATA_WIDTH),
           .DEPTH((1 << i))
       ) bram_inst (
-          .clka (CLK),
+          .clka (i_CLK),
           .ena  (1'b1),
           .wea  (we_a[i]),
           .addra(addr_a[i]),
           .dia  (din_a[i]),
           .doa  (dout_a[i]),
-          .clkb (CLK),
+          .clkb (i_CLK),
           .enb  (1'b1),
           .web  (we_b[i]),
           .addrb(addr_b[i]),
@@ -160,8 +160,8 @@ module pipelined_bram_tree #(
   // FSM
   //-------------------------------------------------------------------------
 
-  always_ff @(posedge CLK or negedge RSTn) begin : fsm_seq
-    if (!RSTn) begin
+  always_ff @(posedge i_CLK or negedge i_RSTn) begin : fsm_seq
+    if (!i_RSTn) begin
       state <= IDLE;
     end else begin
       state <= next_state;
@@ -234,8 +234,8 @@ module pipelined_bram_tree #(
   // BRAM read & write, heap management
   //-------------------------------------------------------------------------
 
-  always_ff @(posedge CLK or negedge RSTn) begin : bram_seq
-    if (!RSTn) begin
+  always_ff @(posedge i_CLK or negedge i_RSTn) begin : bram_seq
+    if (!i_RSTn) begin
       parent_lvl <= '0;
       parent_idx <= '0;
       level_0 <= '0;
@@ -417,8 +417,8 @@ module pipelined_bram_tree #(
   // Queue size counter
   //-------------------------------------------------------------------------
 
-  always_ff @(posedge CLK or negedge RSTn) begin : queue_size_seq
-    if (!RSTn) begin
+  always_ff @(posedge i_CLK or negedge i_RSTn) begin : queue_size_seq
+    if (!i_RSTn) begin
       queue_size <= 0;
     end else begin
       queue_size <= next_queue_size;

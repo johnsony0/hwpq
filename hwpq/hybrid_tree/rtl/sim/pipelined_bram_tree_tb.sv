@@ -4,8 +4,8 @@ module pipelined_bram_tree_tb;
   localparam integer DataWidth = 16;
 
   // Clock and reset signals
-  logic                   CLK;
-  logic                   RSTn;
+  logic                   i_CLK;
+  logic                   i_RSTn;
 
   // Input signals
   logic                   i_wrt;
@@ -36,8 +36,8 @@ module pipelined_bram_tree_tb;
       .QUEUE_SIZE(QueueSize),
       .DATA_WIDTH(DataWidth)
   ) uut (
-      .CLK(CLK),
-      .RSTn(RSTn),
+      .i_CLK(i_CLK),
+      .i_RSTn(i_RSTn),
       .i_wrt(i_wrt),
       .i_read(i_read),
       .i_data(i_data),
@@ -48,20 +48,20 @@ module pipelined_bram_tree_tb;
   );
 
   // Clock generation: 10ns period
-  always #5 CLK <= ~CLK;
+  always #5 i_CLK <= ~i_CLK;
 
   initial begin
     // Initialize signals
-    CLK = 0;
-    RSTn = 0;
+    i_CLK = 0;
+    i_RSTn = 0;
     i_wrt = 0;
     i_read = 0;
     i_data = 0;
 
     // Reset the module
-    @(posedge CLK);
-    RSTn = 1;
-    @(posedge CLK);
+    @(posedge i_CLK);
+    i_RSTn = 1;
+    @(posedge i_CLK);
 
     // Initialize the reference queue, sort the reference queue, and write to the queue
     for (int i = 0; i < QueueSize; i++) begin
@@ -87,7 +87,7 @@ module pipelined_bram_tree_tb;
     uut.next_queue_size = QueueSize;
     uut.next_state = 0;
 
-    repeat (16) @(posedge CLK);
+    repeat (16) @(posedge i_CLK);
 
     // Test Case 1: Dequeue nodes
     // Dequeue nodes for QUEUE_SIZE times
@@ -126,7 +126,7 @@ module pipelined_bram_tree_tb;
     uut.next_queue_size = QueueSize;
     uut.next_state = 0;
 
-    repeat (16) @(posedge CLK);
+    repeat (16) @(posedge i_CLK);
 
     // Test Case 2: Replace nodes
     // Replace root node for QUEUE_SIZE times
@@ -185,10 +185,10 @@ module pipelined_bram_tree_tb;
       end else begin
         $display("Dequeue: Queue empty, skipping dequeue");
       end
-      @(posedge CLK);
+      @(posedge i_CLK);
       i_wrt  = 0;
       i_read = 0;
-      repeat (24) @(posedge CLK);
+      repeat (24) @(posedge i_CLK);
     end
   endtask
 
@@ -201,10 +201,10 @@ module pipelined_bram_tree_tb;
       ref_queue.pop_front();
       ref_queue.push_back(value);
       ref_queue.rsort();
-      @(posedge CLK);
+      @(posedge i_CLK);
       i_wrt  = 0;
       i_read = 0;
-      repeat (24) @(posedge CLK);
+      repeat (24) @(posedge i_CLK);
     end
   endtask
 

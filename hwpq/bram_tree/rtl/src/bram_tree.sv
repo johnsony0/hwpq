@@ -6,8 +6,8 @@
                operations.
   Parameters: QUEUE_SIZE - Maximum number of elements in the priority queue
               DATA_WIDTH - Bit width of data elements
-  Inputs: CLK - System clock
-          RSTn - Active-low reset signal
+  Inputs: i_CLK - System clock
+          i_RSTn - Active-low reset signal
           i_wrt - Write/insert command (enqueue operation)
           i_read - Read/pop command (dequeue operation)
           i_data - Input data to be enqueued
@@ -41,8 +41,8 @@ module bram_tree #(
 		parameter integer QUEUE_SIZE = bram_tree_pkg::QUEUE_SIZE,
     parameter integer DATA_WIDTH = bram_tree_pkg::DATA_WIDTH
 )(
-    input  logic                  CLK,
-    input  logic                  RSTn,
+    input  logic                  i_CLK,
+    input  logic                  i_RSTn,
     // Inputs
     input  logic                  i_wrt,    // Write/insert command
     input  logic                  i_read,   // Read/pop command
@@ -110,12 +110,12 @@ module bram_tree #(
   logic [DATA_WIDTH-1:0] second_greatest, next_second_greatest;
 
   rams_tdp_rf_rf bram_inst (
-    .clka (CLK), .ena(1'b1), .wea(we_a), .addra(addr_a), .dia(din_a), .doa(dout_a),
-    .clkb (CLK), .enb(1'b1), .web(we_b), .addrb(addr_b), .dib(din_b), .dob(dout_b)
+    .clka (i_CLK), .ena(1'b1), .wea(we_a), .addra(addr_a), .dia(din_a), .doa(dout_a),
+    .clkb (i_CLK), .enb(1'b1), .web(we_b), .addrb(addr_b), .dib(din_b), .dob(dout_b)
   );
 
-  always_ff @(posedge CLK or negedge RSTn) begin : fsm_seq
-    if (!RSTn) begin
+  always_ff @(posedge i_CLK or negedge i_RSTn) begin : fsm_seq
+    if (!i_RSTn) begin
       state         <= IDLE;
       queue_size    <= 0;
       curr          <= '0;

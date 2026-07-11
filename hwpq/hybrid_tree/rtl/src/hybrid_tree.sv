@@ -9,8 +9,8 @@
                enqueue, dequeue, and replace operations.
   Parameters: QUEUE_SIZE - Maximum number of elements in the priority queue
               DATA_WIDTH - Bit width of data elements
-  Inputs: CLK - System clock
-          RSTn - Active-low reset signal
+  Inputs: i_CLK - System clock
+          i_RSTn - Active-low reset signal
           i_wrt - Write/insert command (enqueue operation)
           i_read - Read/pop command (dequeue operation)
           i_data - Input data to be inserted (or used for replace)
@@ -23,8 +23,8 @@ module hybrid_tree #(
     parameter integer QUEUE_SIZE = 4,
     parameter integer DATA_WIDTH = 16
 ) (
-    input  logic                  CLK,
-    input  logic                  RSTn,
+    input  logic                  i_CLK,
+    input  logic                  i_RSTn,
     // Inputs
     input  logic                  i_wrt,    // Write/insert command
     input  logic                  i_read,   // Read/pop command
@@ -93,8 +93,8 @@ module hybrid_tree #(
   logic [$clog2(QUEUE_SIZE)-1:0] next_size;
   logic empty, full;
 
-  always_ff @(posedge CLK or negedge RSTn) begin : queue_size_seq
-    if (!RSTn) begin
+  always_ff @(posedge i_CLK or negedge i_RSTn) begin : queue_size_seq
+    if (!i_RSTn) begin
       size <= 0;
     end else begin
       size <= next_size;
@@ -167,8 +167,8 @@ module hybrid_tree #(
           .DATA_WIDTH(DATA_WIDTH),
           .QUEUE_SIZE(BRAM_SIZE)
       ) bram_tree_inst (
-          .CLK(CLK),
-          .RSTn(RSTn),
+          .i_CLK(i_CLK),
+          .i_RSTn(i_RSTn),
           .i_wrt(bram_i_wrt[bram_tree_gen]),
           .i_read(bram_i_read[bram_tree_gen]),
           .i_data(bram_i_data[bram_tree_gen]),
@@ -183,8 +183,8 @@ module hybrid_tree #(
   //-------------------------------------------------------------------------
   // Regsiter Array Mamagement
   //-------------------------------------------------------------------------
-  always_ff @(posedge CLK or negedge RSTn) begin : array_seq
-    if (!RSTn) begin
+  always_ff @(posedge i_CLK or negedge i_RSTn) begin : array_seq
+    if (!i_RSTn) begin
       for (int i = 0; i < ARRAY_SIZE; i++) begin
         level_0_data[i]   <= '{default: 0};
         level_0_target[i] <= '{default: 0};
