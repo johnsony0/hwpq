@@ -388,8 +388,8 @@ module register_tree_tb;
       i_read_ena = 0;
       i_wrt_dis  = 0;
       i_read_dis = 0;
-      if (current_mode == ENABLED) repeat (2) @(posedge CLK);
-      else if (current_mode == DISABLED) repeat (2) @(posedge CLK);
+      
+      repeat (2) @(posedge CLK);
     end
   endtask
 
@@ -426,9 +426,8 @@ module register_tree_tb;
       i_read_ena = 0;
       i_wrt_dis  = 0;
       i_read_dis = 0;
-      if (current_mode == ENABLED) repeat (2) @(posedge CLK);
-      else if (current_mode == DISABLED) repeat (2) @(posedge CLK);
-    end
+      repeat (2) @(posedge CLK); 
+    end  
   endtask
 
   task automatic replace_init(input logic [DATA_WIDTH-1:0] value);
@@ -447,8 +446,7 @@ module register_tree_tb;
       i_read_ena = 0;
       i_wrt_dis  = 0;
       i_read_dis = 0;
-      if (current_mode == ENABLED) repeat (2) @(posedge CLK);
-      else if (current_mode == DISABLED) repeat (2) @(posedge CLK);
+      repeat (2) @(posedge CLK);
     end
   endtask
 
