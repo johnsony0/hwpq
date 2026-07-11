@@ -68,6 +68,14 @@ module systolic_array_tb;
     // Test Case 1: Successive decreasing numbers in IB
     $display("\nTest Case 1: Successive decreasing numbers in IB");
     ref_queue.delete();
+
+    /* Icarus Verilog (12.0) cannot force an unpacked array, so the DUT buffers are seeded
+      one element at a time with plain hierarchical assignments instead of
+        `force u_SystolicArray.IB = '{16'd1, 16'd6, 16'd4, 16'd2};`
+      which fails with "Assignment to an entire array or to an array slice is not yet supported".
+      Forcing a single word fails too with "cannot force to the word of a variable array". 
+      The same applies to the other test cases below. */
+    
     u_SystolicArray.IB[0] = 16'd1;
     u_SystolicArray.IB[1] = 16'd6;
     u_SystolicArray.IB[2] = 16'd4;
