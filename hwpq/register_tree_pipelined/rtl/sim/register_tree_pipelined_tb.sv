@@ -357,21 +357,27 @@ module register_tree_pipelined_tb;
   task automatic enqueue(input logic [DATA_WIDTH-1:0] value);
     begin
       if (!o_full) begin
-        if (current_mode == ENABLED) begin
-          i_wrt_ena = 1;
-          i_read_ena = 0;
-          i_data_ena = value;
+        case (current_mode)
+          ENABLED: begin
+            i_wrt_ena = 1;
+            i_read_ena = 0;
+            i_data_ena = value;
 
-          ref_queue_enq_1[ref_queue_enq_1_size] = value;
-          ref_queue_enq_1_size++;
-      
-          rsort_ena();
-        end else if (current_mode == DISABLED) begin
-          i_wrt_dis = 1;
-          i_read_dis = 0;
-          i_data_dis = value;
-//          $display("Enqueue attempt with ENQ_ENA disabled - should have no effect");
-        end
+            ref_queue_enq_1[ref_queue_enq_1_size] = value;
+            ref_queue_enq_1_size++;
+
+            rsort_ena();
+          end
+          DISABLED: begin
+            i_wrt_dis = 1;
+            i_read_dis = 0;
+            i_data_dis = value;
+//            $display("Enqueue attempt with ENQ_ENA disabled - should have no effect");
+          end
+          default: begin
+            $display("Enqueue: Invalid mode, skipping enqueue");
+          end
+        endcase
       end else begin
         $display("Enqueue: Queue full, skipping enqueue");
       end
@@ -380,37 +386,50 @@ module register_tree_pipelined_tb;
       i_read_ena = 0;
       i_wrt_dis  = 0;
       i_read_dis = 0;
-      if (current_mode == ENABLED) repeat ($clog2(QUEUE_SIZE)) @(posedge CLK);
-      else if (current_mode == DISABLED) repeat (2) @(posedge CLK); // should have no effects
+      case (current_mode)
+        ENABLED: begin
+          repeat ($clog2(QUEUE_SIZE)) @(posedge CLK);
+        end
+        DISABLED: begin
+          repeat (2) @(posedge CLK); // should have no effects
+        end
+        default: begin
+          $display("Enqueue: Invalid mode, skipping enqueue");
+        end
+      endcase
     end
   endtask
 
   task automatic dequeue();
     begin
       if (!o_empty) begin
-        if (current_mode == ENABLED) begin
-          i_wrt_ena  = 0;
-          i_read_ena = 1;
-          i_data_ena = 0;
+        case (current_mode)
+          ENABLED: begin
+            i_wrt_ena  = 0;
+            i_read_ena = 1;
+            i_data_ena = 0;
 
-          for (int i = 0; i < ref_queue_enq_1_size - 1; i++) begin
-            ref_queue_enq_1[i] = ref_queue_enq_1[i+1];
+            for (int i = 0; i < ref_queue_enq_1_size - 1; i++) begin
+              ref_queue_enq_1[i] = ref_queue_enq_1[i+1];
+            end
+            ref_queue_enq_1[ref_queue_enq_1_size-1] = '0;
+            ref_queue_enq_1_size--;
           end
-          ref_queue_enq_1[ref_queue_enq_1_size-1] = '0; 
-          ref_queue_enq_1_size--;
+          DISABLED: begin
+            i_wrt_dis  = 0;
+            i_read_dis = 1;
+            i_data_dis = 0;
 
-        end else if (current_mode == DISABLED) begin
-          i_wrt_dis  = 0;
-          i_read_dis = 1;
-          i_data_dis = 0;
-
-          for (int i = 0; i < ref_queue_enq_0_size - 1; i++) begin
-            ref_queue_enq_0[i] = ref_queue_enq_0[i+1];
+            for (int i = 0; i < ref_queue_enq_0_size - 1; i++) begin
+              ref_queue_enq_0[i] = ref_queue_enq_0[i+1];
+            end
+            ref_queue_enq_0[ref_queue_enq_0_size-1] = '0;
+            ref_queue_enq_0_size--;
           end
-          ref_queue_enq_0[ref_queue_enq_0_size-1] = '0; 
-          ref_queue_enq_0_size--;
-
-        end
+          default: begin
+            $display("Dequeue: Invalid mode, skipping dequeue");
+          end
+        endcase
       end else begin
         $display("Dequeue: Queue empty, skipping dequeue");
       end
@@ -426,32 +445,38 @@ module register_tree_pipelined_tb;
 
   task automatic replace(input logic [DATA_WIDTH-1:0] value);
     begin
-      if (current_mode == ENABLED) begin
-        i_wrt_ena  = 1;
-        i_read_ena = 1;
-        i_data_ena = value;
-        if (o_empty) begin
-          ref_queue_enq_1[ref_queue_enq_1_size] = value;
-          ref_queue_enq_1_size++;
-          
-          rsort_ena();
-        end else begin
-          ref_queue_enq_1[0] = value;
-          rsort_ena();
+      case (current_mode)
+        ENABLED: begin
+          i_wrt_ena  = 1;
+          i_read_ena = 1;
+          i_data_ena = value;
+          if (o_empty) begin
+            ref_queue_enq_1[ref_queue_enq_1_size] = value;
+            ref_queue_enq_1_size++;
+
+            rsort_ena();
+          end else begin
+            ref_queue_enq_1[0] = value;
+            rsort_ena();
+          end
         end
-      end else if (current_mode == DISABLED) begin
-        i_wrt_dis  = 1;
-        i_read_dis = 1;
-        i_data_dis = value;
-        if (o_empty) begin
-          ref_queue_enq_0[ref_queue_enq_0_size] = value;
-          ref_queue_enq_0_size++;
-          rsort_dis();
-        end else begin
-          ref_queue_enq_0[0] = value;
-          rsort_dis();
+        DISABLED: begin
+          i_wrt_dis  = 1;
+          i_read_dis = 1;
+          i_data_dis = value;
+          if (o_empty) begin
+            ref_queue_enq_0[ref_queue_enq_0_size] = value;
+            ref_queue_enq_0_size++;
+            rsort_dis();
+          end else begin
+            ref_queue_enq_0[0] = value;
+            rsort_dis();
+          end
         end
-      end
+        default: begin
+          $display("Replace: Invalid mode, skipping replace");
+        end
+      endcase
       @(posedge CLK);
       i_wrt_ena  = 0;
       i_read_ena = 0;
@@ -464,15 +489,21 @@ module register_tree_pipelined_tb;
 
   task automatic replace_init(input logic [DATA_WIDTH-1:0] value);
     begin
-      if (current_mode == ENABLED) begin
-        i_wrt_ena  = 1;
-        i_read_ena = 1;
-        i_data_ena = value;
-      end else if (current_mode == DISABLED) begin
-        i_wrt_dis  = 1;
-        i_read_dis = 1;
-        i_data_dis = value;
-      end
+      case (current_mode)
+        ENABLED: begin
+          i_wrt_ena  = 1;
+          i_read_ena = 1;
+          i_data_ena = value;
+        end
+        DISABLED: begin
+          i_wrt_dis  = 1;
+          i_read_dis = 1;
+          i_data_dis = value;
+        end
+        default: begin
+          $display("Replace: Invalid mode, skipping replace");
+        end
+      endcase
       @(posedge CLK);
       i_wrt_ena  = 0;
       i_read_ena = 0;
