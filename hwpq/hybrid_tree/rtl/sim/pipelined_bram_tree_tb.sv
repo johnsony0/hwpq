@@ -13,8 +13,8 @@ module pipelined_bram_tree_tb;
   logic   [DataWidth-1:0] i_data;
 
   // Output signals
-  logic                   o_full;
-  logic                   o_empty;
+  logic                   o_write_ready;
+  logic                   o_read_ready;
   logic                   o_valid;
   logic   [DataWidth-1:0] o_data;
 
@@ -41,8 +41,8 @@ module pipelined_bram_tree_tb;
       .i_wrt(i_wrt),
       .i_read(i_read),
       .i_data(i_data),
-      .o_full(o_full),
-      .o_empty(o_empty),
+      .o_write_ready(o_write_ready),
+      .o_read_ready(o_read_ready),
       .o_valid(o_valid),
       .o_data(o_data)
   );
@@ -94,7 +94,7 @@ module pipelined_bram_tree_tb;
     $display("\nTest Case 1: Dequeue Test");
     for (int i = 0; i < QueueSize; i++) begin
       dequeue();
-      if (!o_empty) begin
+      if (o_read_ready) begin
         assert (o_data == ref_queue[0])
         else $error("Dequeue: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data);
       end else begin
@@ -147,7 +147,7 @@ module pipelined_bram_tree_tb;
       case (random_operation)
         DEQUEUE: begin
           dequeue();
-          if (!o_empty) begin
+          if (o_read_ready) begin
             assert (o_data == ref_queue[0])
             else
               $error("Dequeue: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data);
@@ -177,7 +177,7 @@ module pipelined_bram_tree_tb;
   // Task to read root node
   task automatic dequeue();
     begin
-      if (!o_empty) begin
+      if (o_read_ready) begin
         i_wrt  = 0;
         i_read = 1;
         ref_queue.pop_front();

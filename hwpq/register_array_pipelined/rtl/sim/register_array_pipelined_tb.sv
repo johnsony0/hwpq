@@ -20,18 +20,18 @@ module register_array_pipelined_tb;
   logic [DATA_WIDTH-1:0] i_data_dis;
 
   // Output signals - for ENQ_ENA enabled
-  logic                  o_full_ena;
-  logic                  o_empty_ena;
+  logic                  o_write_ready_ena;
+  logic                  o_read_ready_ena;
   logic [DATA_WIDTH-1:0] o_data_ena;
 
   // Output signals - for ENQ_ENA disabled
-  logic                  o_full_dis;
-  logic                  o_empty_dis;
+  logic                  o_write_ready_dis;
+  logic                  o_read_ready_dis;
   logic [DATA_WIDTH-1:0] o_data_dis;
 
   // Current active outputs for testing
-  logic                  o_full;
-  logic                  o_empty;
+  logic                  o_write_ready;
+  logic                  o_read_ready;
   logic [DATA_WIDTH-1:0] o_data;
   logic [DATA_WIDTH-1:0] o_data_prev;
 
@@ -73,8 +73,8 @@ module register_array_pipelined_tb;
       .i_wrt  (i_wrt_ena),
       .i_read (i_read_ena),
       .i_data (i_data_ena),
-      .o_full (o_full_ena),
-      .o_empty(o_empty_ena),
+      .o_write_ready (o_write_ready_ena),
+      .o_read_ready(o_read_ready_ena),
       .o_data (o_data_ena)
   );
 
@@ -89,26 +89,26 @@ module register_array_pipelined_tb;
       .i_wrt  (i_wrt_dis),
       .i_read (i_read_dis),
       .i_data (i_data_dis),
-      .o_full (o_full_dis),
-      .o_empty(o_empty_dis),
+      .o_write_ready (o_write_ready_dis),
+      .o_read_ready(o_read_ready_dis),
       .o_data (o_data_dis)
   );
 
   always_comb begin : output_signal_switch
     case (current_mode)
       ENABLED: begin
-        o_full  = o_full_ena;
-        o_empty = o_empty_ena;
+        o_write_ready  = o_write_ready_ena;
+        o_read_ready = o_read_ready_ena;
         o_data  = o_data_ena;
       end
       DISABLED: begin
-        o_full  = o_full_dis;
-        o_empty = o_empty_dis;
+        o_write_ready  = o_write_ready_dis;
+        o_read_ready = o_read_ready_dis;
         o_data  = o_data_dis;
       end
       default: begin
-        o_full  = o_full_dis;
-        o_empty = o_empty_dis;
+        o_write_ready  = o_write_ready_dis;
+        o_read_ready = o_read_ready_dis;
         o_data  = o_data_dis;
       end
     endcase
@@ -148,14 +148,14 @@ module register_array_pipelined_tb;
       random_value = DATA_WIDTH'(($urandom & ((1 << DATA_WIDTH) - 1)) % 1025);
       enqueue(random_value);
     end
-    assert (o_full)
+    assert (!o_write_ready)
     else begin error_count++; $error("The queue should be filled by the intialization!"); end;
 
     // Test Case 1: Dequeue nodes with ENQ_ENA enabled
     $display("\nTest Case 1: Dequeue Test (ENQ_ENA enabled)");
     for (int i = 0; i < QUEUE_SIZE / 2; i++) begin
       dequeue();
-      if (!o_empty) begin
+      if (o_read_ready) begin
         assert (o_data == ref_queue_enq_1[0])
         else
           begin error_count++; $error("Dequeue: Node value mismatch -> expected %d, got %d", ref_queue_enq_1[0], o_data); end;
@@ -174,7 +174,7 @@ module register_array_pipelined_tb;
       else
         begin error_count++; $error("Enqueue: Node value mismatch -> expected %d, got %d", ref_queue_enq_1[0], o_data); end;
     end
-    assert (o_full)
+    assert (!o_write_ready)
     else begin error_count++; $error("The queue should be filled after enqueue!"); end;
 
     // Test Case 3: Replace nodes with ENQ_ENA enabled
@@ -205,7 +205,7 @@ module register_array_pipelined_tb;
         end
         DEQUEUE: begin
           dequeue();
-          if (!o_empty) begin
+          if (o_read_ready) begin
             assert (o_data == ref_queue_enq_1[0])
             else
               begin error_count++; $error(
@@ -254,10 +254,10 @@ module register_array_pipelined_tb;
 
     // Test Case 5: Dequeue Test with ENQ_ENA disabled
     $display("\nTest Case 5: Dequeue Test (ENQ_ENA disabled)");
-    assert (o_full) else begin error_count++; $error("The queue should be filled by the intialization!"); end;
+    assert (!o_write_ready) else begin error_count++; $error("The queue should be filled by the intialization!"); end;
     for (int i = 0; i < QUEUE_SIZE / 2; i++) begin
       dequeue();
-      if (!o_empty) begin
+      if (o_read_ready) begin
         assert (o_data == ref_queue_enq_0[0])
         else
           begin error_count++; $error("Dequeue: Node value mismatch -> expected %d, got %d", ref_queue_enq_0[0], o_data); end;
@@ -297,7 +297,7 @@ module register_array_pipelined_tb;
       end
       assert (!error_flag) else begin error_count++; $error("The queue should not have change!"); end;
     end
-    assert (!o_full && !o_empty)
+    assert (o_write_ready && o_read_ready)
     else begin error_count++; $error("The queue should not do anything!"); end;
 
     // Test Case 7: Test Replace operation with ENQ_ENA disabled
@@ -317,7 +317,7 @@ module register_array_pipelined_tb;
       case (random_operation)
         DEQUEUE: begin
           dequeue();
-          if (!o_empty) begin
+          if (o_read_ready) begin
             assert (o_data == ref_queue_enq_0[0])
             else
               begin error_count++; $error(
@@ -355,7 +355,7 @@ module register_array_pipelined_tb;
 
   task automatic enqueue(input logic [DATA_WIDTH-1:0] value);
     begin
-      if (!o_full) begin
+      if (o_write_ready) begin
         case (current_mode)
           ENABLED: begin
             i_wrt_ena = 1;
@@ -391,7 +391,7 @@ module register_array_pipelined_tb;
 
   task automatic dequeue();
     begin
-      if (!o_empty) begin
+      if (o_read_ready) begin
         case (current_mode)
           ENABLED: begin
             i_wrt_ena  = 0;
@@ -439,7 +439,7 @@ module register_array_pipelined_tb;
           i_wrt_ena  = 1;
           i_read_ena = 1;
           i_data_ena = value;
-          if (o_empty) begin
+          if (!o_read_ready) begin
             ref_queue_enq_1[ref_queue_enq_1_size] = value;
             ref_queue_enq_1_size++;
 
@@ -453,7 +453,7 @@ module register_array_pipelined_tb;
           i_wrt_dis  = 1;
           i_read_dis = 1;
           i_data_dis = value;
-          if (o_empty) begin
+          if (!o_read_ready) begin
             ref_queue_enq_0[ref_queue_enq_0_size] = value;
             ref_queue_enq_0_size++;
             rsort_dis();

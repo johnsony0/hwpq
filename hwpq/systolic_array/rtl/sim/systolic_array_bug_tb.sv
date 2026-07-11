@@ -13,8 +13,8 @@ module systolic_array_tb;
   logic [DATA_WIDTH-1:0] i_data;
 
   // Output signals
-  logic                  o_full;
-  logic                  o_empty;
+  logic                  o_write_ready;
+  logic                  o_read_ready;
   logic [DATA_WIDTH-1:0] o_data;
 
   // Reference array for verification
@@ -42,8 +42,8 @@ module systolic_array_tb;
       .i_wrt(i_wrt),
       .i_read(i_read),
       .i_data(i_data),
-      .o_full(o_full),
-      .o_empty(o_empty),
+      .o_write_ready(o_write_ready),
+      .o_read_ready(o_read_ready),
       .o_data(o_data)
   );
 
@@ -111,7 +111,7 @@ module systolic_array_tb;
 
     for (int i = 0; i < 8; i++) begin
       dequeue();
-      if (!o_empty) begin
+      if (o_read_ready) begin
         assert (o_data == ref_queue[0])
         else begin error_count++; $error("Dequeue: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data); end;
       end else begin
@@ -160,7 +160,7 @@ module systolic_array_tb;
 
     for (int i = 0; i < 8; i++) begin
       dequeue();
-      if (!o_empty) begin
+      if (o_read_ready) begin
         assert (o_data == ref_queue[0])
         else begin error_count++; $error("Dequeue: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data); end;
       end else begin
@@ -208,7 +208,7 @@ module systolic_array_tb;
 
     for (int i = 0; i < 8; i++) begin
       dequeue();
-      if (!o_empty) begin
+      if (o_read_ready) begin
         assert (o_data == ref_queue[0])
         else begin error_count++; $error("Dequeue: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data); end;
       end else begin
@@ -257,7 +257,7 @@ module systolic_array_tb;
 
     for (int i = 0; i < 8; i++) begin
       dequeue();
-      if (!o_empty) begin
+      if (o_read_ready) begin
         assert (o_data == ref_queue[0])
         else begin error_count++; $error("Dequeue: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data); end;
       end else begin
@@ -278,7 +278,7 @@ module systolic_array_tb;
   // Task to read root node
   task automatic dequeue();
     begin
-      if (!o_empty) begin
+      if (o_read_ready) begin
         i_wrt  = 0;
         i_read = 1;
         for (int i = 0; i < ref_size - 1; i++) begin
