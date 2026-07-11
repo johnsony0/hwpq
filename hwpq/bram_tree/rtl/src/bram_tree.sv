@@ -1,7 +1,7 @@
 /*******************************************************************************
   Module Name: bram_tree
   Date: 2025/03/05
-  Description: A priority queue implementation using a binary min-heap structure
+  Description: A priority queue implementation using a binary max-heap structure
                stored in block RAM (BRAM). Supports enqueue, dequeue, and replace
                operations.
   Parameters: QUEUE_SIZE - Maximum number of elements in the priority queue
@@ -14,7 +14,6 @@
   Outputs: o_full - High when the queue is at maximum capacity (QUEUE_SIZE)
            o_empty - High when the queue is empty
            o_data - Output data from the highest priority element
-           o_ready - High if the tree is done propagating/rebalancing & ready for another read/write
 *******************************************************************************/
 
 package bram_tree_pkg;

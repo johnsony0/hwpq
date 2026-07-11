@@ -15,7 +15,6 @@
           i_data - Input data to be inserted (or used for replace)
   Outputs: o_full - High when the queue is at maximum capacity (QUEUE_SIZE)
            o_empty - High when the queue is empty
-           o_valid - High when o_data holds a valid output
            o_data - Output data from the highest priority element
 *******************************************************************************/
 
