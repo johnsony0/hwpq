@@ -14,8 +14,8 @@
           i_wrt - Write/insert command (enqueue operation)
           i_read - Read/pop command (dequeue operation)
           i_data - Input data to be inserted (or used for replace)
-  Outputs: o_full - High when the queue is at maximum capacity (QUEUE_SIZE)
-           o_empty - High when the queue is empty
+  Outputs: o_write_ready - High when the queue has room to accept a write
+           o_read_ready - High when the queue holds data available to read
            o_data - Output data from the highest priority element
 *******************************************************************************/
 
@@ -30,8 +30,8 @@ module hybrid_tree #(
     input  logic                  i_read,   // Read/pop command
     input  logic [DATA_WIDTH-1:0] i_data,   // Data to be inserted (or used for replace)
     // Outputs
-    output logic                  o_full,   // High if the heap is full
-    output logic                  o_empty,  // High if the heap is empty
+    output logic                  o_write_ready,   // High if the queue can accept a write
+    output logic                  o_read_ready,  // High if the queue has data to read
     output logic [DATA_WIDTH-1:0] o_data    // Output data (popped value)
 );
 
@@ -120,8 +120,8 @@ module hybrid_tree #(
   logic bram_i_read[ARRAY_SIZE-1:0];
   logic [DATA_WIDTH-1:0] bram_i_data[ARRAY_SIZE-1:0];
   logic [DATA_WIDTH-1:0] next_bram_i_data[ARRAY_SIZE-1:0];
-  logic bram_o_full[ARRAY_SIZE-1:0];
-  logic bram_o_empty[ARRAY_SIZE-1:0];
+  logic bram_o_write_ready[ARRAY_SIZE-1:0];
+  logic bram_o_read_ready[ARRAY_SIZE-1:0];
   logic bram_o_valid[ARRAY_SIZE-1:0];
   logic [DATA_WIDTH-1:0] bram_o_data[ARRAY_SIZE-1:0];
   logic bram_enqueue[ARRAY_SIZE-1:0];
@@ -172,8 +172,8 @@ module hybrid_tree #(
           .i_wrt(bram_i_wrt[bram_tree_gen]),
           .i_read(bram_i_read[bram_tree_gen]),
           .i_data(bram_i_data[bram_tree_gen]),
-          .o_full(bram_o_full[bram_tree_gen]),
-          .o_empty(bram_o_empty[bram_tree_gen]),
+          .o_write_ready(bram_o_write_ready[bram_tree_gen]),
+          .o_read_ready(bram_o_read_ready[bram_tree_gen]),
           .o_valid(bram_o_valid[bram_tree_gen]),
           .o_data(bram_o_data[bram_tree_gen])
       );
@@ -295,19 +295,19 @@ module hybrid_tree #(
   always_comb begin : empty_check
     empty = (size == 0);
     for (int i = 0; i < ARRAY_SIZE; i++) begin
-      empty = empty & bram_o_empty[i];  // AND operation to ensure all are empty
+      empty = empty & !bram_o_read_ready[i];  // AND operation to ensure all are empty
     end
   end
 
   always_comb begin : full_check
     full = (size == ARRAY_SIZE);
     for (int i = 0; i < ARRAY_SIZE; i++) begin
-      full = full & bram_o_full[i];  // AND operation to ensure all are full
+      full = full & !bram_o_write_ready[i];  // AND operation to ensure all are full
     end
   end
 
-  assign o_empty = empty;
-  assign o_full  = full;
+  assign o_read_ready = !empty;
+  assign o_write_ready  = !full;
   assign o_data  = level_0_data[0];
 
 endmodule
