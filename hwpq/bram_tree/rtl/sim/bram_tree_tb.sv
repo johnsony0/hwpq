@@ -2,8 +2,8 @@ import bram_tree_pkg::*;
 
 module bram_tree_tb;
   // Clock and reset signals
-  logic                   CLK;
-  logic                   RSTn;
+  logic                   i_CLK;
+  logic                   i_RSTn;
 
   // Input signals
   logic                   i_wrt;
@@ -11,8 +11,8 @@ module bram_tree_tb;
   logic   [DATA_WIDTH-1:0] i_data;
 
   // Output signals
-  logic                   o_full;
-  logic                   o_empty;
+  logic                   o_write_ready;
+  logic                   o_read_ready;
   logic   [DATA_WIDTH-1:0] o_data;
 
   // Reference array for verification
@@ -32,31 +32,33 @@ module bram_tree_tb;
 
   // Instantiate the register_tree module
   bram_tree uut (
-      .CLK(CLK),
-      .RSTn(RSTn),
+      .i_CLK(i_CLK),
+      .i_RSTn(i_RSTn),
       .i_wrt(i_wrt),
       .i_read(i_read),
       .i_data(i_data),
-      .o_full(o_full),
-      .o_empty(o_empty),
+      .o_write_ready(o_write_ready),
+      .o_read_ready(o_read_ready),
       .o_data(o_data)
   );
 
   // Clock generation: 10ns period
-  always #5 CLK <= ~CLK;
+  always #5 i_CLK <= ~i_CLK;
+
+  int error_count = 0;
 
   initial begin
     // Initialize signals
-    CLK = 0;
-    RSTn = 0;
+    i_CLK = 0;
+    i_RSTn = 0;
     i_wrt = 0;
     i_read = 0;
     i_data = 0;
 
     // Reset the module
-    @(posedge CLK);
-    RSTn = 1;
-    repeat (2) @(posedge CLK);
+    @(posedge i_CLK);
+    i_RSTn = 1;
+    repeat (2) @(posedge i_CLK);
 
     // Initialize the reference queue, sort the reference queue, and write to the queue
     for (i = 0; i < QUEUE_SIZE; i++) begin
@@ -64,23 +66,23 @@ module bram_tree_tb;
       enqueue(random_value);
     end
 
-    repeat (16) @(posedge CLK);
+    repeat (16) @(posedge i_CLK);
 
     // Test Case 1: Dequeue nodes
     // Dequeue nodes for QUEUE_SIZE times
     $display("\nTest Case 1: Dequeue Test");
     for (i = 0; i < QUEUE_SIZE; i++) begin
       dequeue();
-      if (!o_empty) begin
+      if (o_read_ready) begin
         assert (o_data == ref_queue[0])
-        else $error("Dequeue: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data);
+        else begin error_count++; $error("Dequeue: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data); end;
       end else begin
         assert (o_data == '0)
-        else $error("Dequeue: Node f value mismatch -> expected %d, got %d", '0, o_data);
+        else begin error_count++; $error("Dequeue: Node f value mismatch -> expected %d, got %d", '0, o_data); end;
       end
     end
 
-    repeat (16) @(posedge CLK);
+    repeat (16) @(posedge i_CLK);
 
     
     // Test Case 2: Enqueue nodes
@@ -90,11 +92,11 @@ module bram_tree_tb;
       random_value = $urandom_range(0, 1024);
       enqueue(random_value);
       assert (o_data == ref_queue[0])
-      else $error("Enqueue: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data);
+      else begin error_count++; $error("Enqueue: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data); end;
     end
 
 
-    repeat (16) @(posedge CLK);
+    repeat (16) @(posedge i_CLK);
     
     // Test Case 3: Replace nodes
     // Replace root node for QUEUE_SIZE times
@@ -103,7 +105,7 @@ module bram_tree_tb;
       random_value = $urandom_range(0, 1024);
       replace(random_value);
       assert (o_data == ref_queue[0])
-      else $error("Replace: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data);
+      else begin error_count++; $error("Replace: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data); end;
     end
 
     
@@ -118,18 +120,18 @@ module bram_tree_tb;
           enqueue(random_value);
           assert (o_data == ref_queue[0])
           else
-            $error("Enqueue: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data);
+            begin error_count++; $error("Enqueue: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data); end;
         end
 
         DEQUEUE: begin
           dequeue();
-          if (!o_empty) begin
+          if (o_read_ready) begin
             assert (o_data == ref_queue[0])
             else
-              $error("Dequeue: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data);
+              begin error_count++; $error("Dequeue: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data); end;
           end else begin
             assert (o_data == '0)
-            else $error("Dequeue: Node f value mismatch -> expected %d, got %d", '0, o_data);
+            else begin error_count++; $error("Dequeue: Node f value mismatch -> expected %d, got %d", '0, o_data); end;
           end
         end
 
@@ -137,7 +139,7 @@ module bram_tree_tb;
           replace(random_value);
           assert (o_data == ref_queue[0])
           else
-            $error("Replace: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data);
+            begin error_count++; $error("Replace: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data); end;
         end
 
         default: begin
@@ -147,15 +149,20 @@ module bram_tree_tb;
     end
     
 
-    $display("\nTest completed! ");
-    $finish;
+    if (error_count == 0) begin
+      $display("\nTest completed!");
+      $finish;
+    end else begin
+      $display("\n%0d error(s) detected during simulation.", error_count);
+      $fatal(1, "Test FAILED with %0d error(s).", error_count);
+    end
   end
 
   // Task to write to the end of the queue
   task automatic enqueue(input logic [DATA_WIDTH-1:0] value);
     logic [DATA_WIDTH-1:0] tmp;
     begin
-      if (!o_full) begin
+      if (o_write_ready) begin
         i_wrt  = 1;
         i_read = 0;
         i_data = value;
@@ -175,17 +182,17 @@ module bram_tree_tb;
       end else begin
         $display("Enqueue: Queue full, skipping enqueue");
       end
-      @(posedge CLK);
+      @(posedge i_CLK);
       i_wrt  = 0;
       i_read = 0;
-      repeat (6 * ($clog2(QUEUE_SIZE + 1) + 1)) @(posedge CLK);
+      repeat (6 * ($clog2(QUEUE_SIZE + 1) + 1)) @(posedge i_CLK);
     end
   endtask
 
   // Task to read root node
   task automatic dequeue();
     begin
-      if (!o_empty) begin
+      if (o_read_ready) begin
         i_wrt  = 0;
         i_read = 1;
         for (int i = 0; i < ref_size - 1; i++) begin
@@ -197,10 +204,10 @@ module bram_tree_tb;
       end else begin
         $display("Dequeue: Queue empty, skipping dequeue");
       end
-      @(posedge CLK);
+      @(posedge i_CLK);
       i_wrt  = 0;
       i_read = 0;
-      repeat (6 * ($clog2(QUEUE_SIZE + 1) + 1)) @(posedge CLK);
+      repeat (6 * ($clog2(QUEUE_SIZE + 1) + 1)) @(posedge i_CLK);
     end
   endtask
 
@@ -226,10 +233,10 @@ module bram_tree_tb;
         $display("Replace: Queue empty, skipping replace");
       end
       
-      @(posedge CLK);
+      @(posedge i_CLK);
       i_wrt  = 0;
       i_read = 0;
-      repeat (6 * ($clog2(QUEUE_SIZE + 1) + 1)) @(posedge CLK);
+      repeat (6 * ($clog2(QUEUE_SIZE + 1) + 1)) @(posedge i_CLK);
     end
   endtask
 
