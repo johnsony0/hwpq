@@ -682,8 +682,10 @@ module bram_tree #(
     endcase
   end
 
-  assign o_write_ready  = !(queue_size == QUEUE_SIZE);
-  assign o_read_ready = !(queue_size == 0);
-  assign o_data  = (queue_size == 0) ? 0 : out_reg;
+  // Both ports gate on the same term since this is a single-threaded FSM
+  // the IDLE state already exposes a usable ready signal
   assign ready   = (state == IDLE);
+  assign o_write_ready = !(queue_size == QUEUE_SIZE) && ready;
+  assign o_read_ready  = !(queue_size == 0) && ready;
+  assign o_data  = (queue_size == 0) ? 0 : out_reg;
 endmodule

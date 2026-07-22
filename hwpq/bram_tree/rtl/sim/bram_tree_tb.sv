@@ -45,6 +45,23 @@ module bram_tree_tb;
   // Clock generation: 10ns period
   always #5 i_CLK <= ~i_CLK;
 
+  logic settled;
+  assign settled = o_write_ready || o_read_ready;
+
+  localparam int SETTLE_TIMEOUT = 10000;
+  task automatic poll_settled();
+    int guard;
+    guard = 0;
+    while (!settled) begin
+      @(negedge i_CLK);
+      guard++;
+      if (guard > SETTLE_TIMEOUT) begin
+        $fatal(1, "poll_settled: DUT never settled after %0d cycles (o_write_ready=%0b o_read_ready=%0b)",
+               SETTLE_TIMEOUT, o_write_ready, o_read_ready);
+      end
+    end
+  endtask
+
   int error_count = 0;
 
   initial begin
@@ -59,14 +76,14 @@ module bram_tree_tb;
     @(posedge i_CLK);
     i_RSTn = 1;
     repeat (2) @(posedge i_CLK);
-
+    @(negedge i_CLK);
     // Initialize the reference queue, sort the reference queue, and write to the queue
     for (i = 0; i < QUEUE_SIZE; i++) begin
       random_value = $urandom_range(0, 1024);
       enqueue(random_value);
     end
 
-    repeat (16) @(posedge i_CLK);
+    poll_settled();
 
     // Test Case 1: Dequeue nodes
     // Dequeue nodes for QUEUE_SIZE times
@@ -82,7 +99,7 @@ module bram_tree_tb;
       end
     end
 
-    repeat (16) @(posedge i_CLK);
+    poll_settled();
 
     
     // Test Case 2: Enqueue nodes
@@ -96,7 +113,7 @@ module bram_tree_tb;
     end
 
 
-    repeat (16) @(posedge i_CLK);
+    poll_settled();
     
     // Test Case 3: Replace nodes
     // Replace root node for QUEUE_SIZE times
@@ -162,6 +179,7 @@ module bram_tree_tb;
   task automatic enqueue(input logic [DATA_WIDTH-1:0] value);
     logic [DATA_WIDTH-1:0] tmp;
     begin
+      poll_settled();
       if (o_write_ready) begin
         i_wrt  = 1;
         i_read = 0;
@@ -183,15 +201,17 @@ module bram_tree_tb;
         $display("Enqueue: Queue full, skipping enqueue");
       end
       @(posedge i_CLK);
+      @(negedge i_CLK);
       i_wrt  = 0;
       i_read = 0;
-      repeat (6 * ($clog2(QUEUE_SIZE + 1) + 1)) @(posedge i_CLK);
+      poll_settled();
     end
   endtask
 
   // Task to read root node
   task automatic dequeue();
     begin
+      poll_settled();
       if (o_read_ready) begin
         i_wrt  = 0;
         i_read = 1;
@@ -205,9 +225,10 @@ module bram_tree_tb;
         $display("Dequeue: Queue empty, skipping dequeue");
       end
       @(posedge i_CLK);
+      @(negedge i_CLK);
       i_wrt  = 0;
       i_read = 0;
-      repeat (6 * ($clog2(QUEUE_SIZE + 1) + 1)) @(posedge i_CLK);
+      poll_settled();
     end
   endtask
 
@@ -215,6 +236,7 @@ module bram_tree_tb;
   task automatic replace(input logic [DATA_WIDTH-1:0] value);
     logic [DATA_WIDTH-1:0] tmp;
     begin
+      poll_settled();
       if (ref_size > 0) begin
         i_wrt  = 1;
         i_read = 1;
@@ -234,9 +256,10 @@ module bram_tree_tb;
       end
       
       @(posedge i_CLK);
+      @(negedge i_CLK);
       i_wrt  = 0;
       i_read = 0;
-      repeat (6 * ($clog2(QUEUE_SIZE + 1) + 1)) @(posedge i_CLK);
+      poll_settled();
     end
   endtask
 
