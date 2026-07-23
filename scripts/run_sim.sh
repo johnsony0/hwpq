@@ -33,7 +33,7 @@ for f in "${ALL_FILES[@]}"; do
 done
 
 echo "==> Compiling ${MODULE} (top: ${TOP})"
-iverilog -g2012 -Wall -s "${TOP}" -o "${BUILD}/sim.vvp" "${PKGS[@]}" "${REST[@]}" "${TB}"
+iverilog -g2012 -Wall -I hwpq/common/tb -s "${TOP}" -o "${BUILD}/sim.vvp" "${PKGS[@]}" "${REST[@]}" "${TB}"
 
 echo "==> Running ${MODULE}"
 vvp "${BUILD}/sim.vvp" | tee "${LOG}"
