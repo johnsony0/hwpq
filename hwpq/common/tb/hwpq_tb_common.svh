@@ -416,6 +416,43 @@ task automatic test_enq_disabled();
   end
 endtask
 
+// Terminal drain phase, runs for both ENQ_ENA modes. Empties the queue completely to
+// exercise the empty-state o_data branch and the replace-into-empty insert path, which
+// the fixed-length stress loop cannot reliably reach on the larger queues
+task automatic test_drain();
+  begin
+    $display("\nDrain Phase: dequeue to empty");
+    // Bounded to QUEUE_SIZE+1 iterations (iverilog -g2012 has no break)
+    for (int i = 0; o_read_ready && i <= QUEUE_SIZE; i++) begin
+      dequeue();
+      if (o_read_ready)
+        assert (o_data == ref_queue[0])
+        else begin error_count++; $error("Drain dequeue: mismatch -> expected %d, got %d", ref_queue[0], o_data); end
+      else
+        assert (o_data == '0)
+        else begin error_count++; $error("Drain dequeue (now empty): expected 0, got %d", o_data); end
+    end
+
+    assert (!o_read_ready)
+    else begin error_count++; $error("Drain: queue did not empty / o_read_ready should be low"); end
+    assert (o_data == '0)
+    else begin error_count++; $error("Drain: empty o_data should be 0, got %d", o_data); end
+
+    random_value = $urandom_range(1, 1023);
+    replace(random_value);
+    assert (o_read_ready)
+    else begin error_count++; $error("Drain: replace on empty should insert (o_read_ready stayed low)"); end
+    assert (o_data == random_value)
+    else begin error_count++; $error("Drain: replace on empty -> expected %d, got %d", random_value, o_data); end
+
+    dequeue();
+    assert (!o_read_ready)
+    else begin error_count++; $error("Drain: queue should be empty after removing the inserted element"); end
+    assert (o_data == '0)
+    else begin error_count++; $error("Drain: empty o_data should be 0 after final dequeue, got %d", o_data); end
+  end
+endtask
+
 initial begin
   i_CLK  = 0;
   i_wrt  = 0;
@@ -428,6 +465,8 @@ initial begin
 
   if (ENQ_ENA) test_enq_enabled();
   else         test_enq_disabled();
+
+  test_drain();
 
   report_measurements();
 
