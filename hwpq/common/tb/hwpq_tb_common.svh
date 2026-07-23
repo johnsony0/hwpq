@@ -138,9 +138,11 @@ task automatic rsort();  // descending: ref_queue[0] is the max (head)
 endtask
 
 // Deassert all command lines off the active edge (negedge contract).
+// Also clear i_data so no stale operand lingers on the bus between commands
 task automatic clear_cmd();
   i_wrt  = 0;
   i_read = 0;
+  i_data = 0;
 endtask
 
 //  Stimulus tasks, gated on settled
