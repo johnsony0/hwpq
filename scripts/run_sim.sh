@@ -14,7 +14,8 @@ TB="$2"
 TOP="$3"
 
 SRC_DIR="hwpq/${MODULE}/rtl/src"
-BUILD="build/${MODULE}"
+# sharing build/${MODULE} would let the runs clobber each other's sim.vvp/sim.log.
+BUILD="build/${TOP}"
 LOG="${BUILD}/sim.log"
 mkdir -p "${BUILD}"
 
