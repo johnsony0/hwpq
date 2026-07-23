@@ -61,6 +61,8 @@ logic [DATA_WIDTH-1:0] random_value;
 int                    random_operation;
 int                    error_count = 0;
 
+int stress_test_iters = 100 >  2 * QUEUE_SIZE ? 100 : 2 * QUEUE_SIZE;
+
 typedef enum int {
   ENQUEUE = 1,
   DEQUEUE = 2,
@@ -298,7 +300,7 @@ task automatic test_enq_enabled();
     end
 
     $display("\nTest Case 4: Stress Test (ENQ_ENA enabled)");
-    for (int i = 0; i < 100; i++) begin
+    for (int i = 0; i < stress_test_iters; i++) begin
       random_operation = $urandom_range(1, 3);
       case (random_operation)
         ENQUEUE: begin
@@ -393,7 +395,7 @@ task automatic test_enq_disabled();
     end
 
     $display("\nTest Case 8: Stress Test (ENQ_ENA disabled)");
-    for (int i = 0; i < 100; i++) begin
+    for (int i = 0; i < stress_test_iters; i++) begin
       random_operation = $urandom_range(2, 3);
       case (random_operation)
         DEQUEUE: begin
