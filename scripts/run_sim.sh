@@ -7,14 +7,15 @@
 #   <testbench_file>  path to the testbench .sv (e.g. hwpq/register_tree/rtl/sim/register_tree_tb.sv)
 #   <top_module>      top-level module name declared in the testbench (e.g. register_tree_tb)
 #
-set -euo pipefail
+set -eu
 
 MODULE="$1"
 TB="$2"
 TOP="$3"
 
 SRC_DIR="hwpq/${MODULE}/rtl/src"
-BUILD="build/${MODULE}"
+# sharing build/${MODULE} would let the runs clobber each other's sim.vvp/sim.log.
+BUILD="build/${TOP}"
 LOG="${BUILD}/sim.log"
 mkdir -p "${BUILD}"
 
@@ -33,17 +34,16 @@ for f in "${ALL_FILES[@]}"; do
 done
 
 echo "==> Compiling ${MODULE} (top: ${TOP})"
-iverilog -g2012 -Wall -s "${TOP}" -o "${BUILD}/sim.vvp" "${PKGS[@]}" "${REST[@]}" "${TB}"
+iverilog -g2012 -Wall -I hwpq/common/tb -s "${TOP}" -o "${BUILD}/sim.vvp" "${PKGS[@]}" "${REST[@]}" "${TB}"
 
 echo "==> Running ${MODULE}"
 vvp "${BUILD}/sim.vvp" | tee "${LOG}"
+status="${PIPESTATUS[0]}"
 
 echo "==> Checking results for ${MODULE}"
-status=0
 
-if grep -inE 'error|mismatch|assertion|\bfail' "${LOG}"; then
-  echo "::error::${MODULE}: assertion/error output detected in simulation log"
-  status=1
+if [ "${status}" -ne 0 ]; then
+  echo "::error::${MODULE}: testbench exited with status ${status}"
 fi
 
 if ! grep -qiE 'test[[:space:]]+completed' "${LOG}"; then

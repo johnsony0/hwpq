@@ -1,16 +1,36 @@
+/*******************************************************************************
+  Module Name: bram_tree_pipelined
+  Date: 2026/06/23
+  Description: A pipelined priority queue implementation using a binary max-heap
+               structure stored in block RAM, with the top few levels
+               kept in registers. Supports enqueue, dequeue, and replace
+               operations, trading throughput (one replace every four cycles)
+               for improved scalability over the non-pipelined BRAM tree.
+  Parameters: QUEUE_SIZE - Maximum number of elements in the priority queue
+              DATA_WIDTH - Bit width of data elements
+  Inputs: i_CLK - System clock
+          i_RSTn - Active-low reset signal
+          i_wrt - Write/insert command (enqueue operation)
+          i_read - Read/pop command (dequeue operation)
+          i_data - Input data to be inserted (or used for replace)
+Outputs:    o_write_ready - High when the queue has room to accept a write
+            o_read_ready - High when the queue holds data available to read
+            o_data - Output data from the highest priority element
+*******************************************************************************/
+
 module bram_tree_pipelined #(
     parameter integer QUEUE_SIZE = 7,
     parameter integer DATA_WIDTH = 16
 ) (
-    input  logic                  CLK,
-    input  logic                  RSTn,
+    input  logic                  i_CLK,
+    input  logic                  i_RSTn,
     // Inputs
     input  logic                  i_wrt,    // Write/insert command
     input  logic                  i_read,   // Read/pop command
     input  logic [DATA_WIDTH-1:0] i_data,   // Data to be inserted (or used for replace)
     // Outputs
-    output logic                  o_full,   // High if the heap is full
-    output logic                  o_empty,  // High if the heap is empty
+    output logic                  o_write_ready,   // High if the queue can accept a write
+    output logic                  o_read_ready,  // High if the queue has data to read
     output logic [DATA_WIDTH-1:0] o_data    // Output data (popped value)
 );
 
@@ -70,6 +90,11 @@ module bram_tree_pipelined #(
   // Size counter to keep track of the number of nodes in the queue
   logic [31:0] queue_size, next_queue_size;
 
+  logic sift_done, next_sift_done;  // whole walk finished - may accept a command
+  logic root_done, next_root_done;  // root written back - o_data is trustworthy
+  logic cmd_dequeue, cmd_replace;
+  logic [DATA_WIDTH-1:0] cmd_data;   // command payload latched at accept
+
   // integers for iteration
   integer lvl_seq, itr_seq, lvl_comb, itr_comb;
 
@@ -97,13 +122,13 @@ module bram_tree_pipelined #(
           .WIDTH(DATA_WIDTH),
           .DEPTH(NODES_NEEDED)
       ) bram_inst (
-          .clka (CLK),
+          .clka (i_CLK),
           .ena  (1'b1),
           .wea  (we_a[i]),
           .addra(addr_a[i]),
           .dia  (din_a[i]),
           .doa  (dout_a[i]),
-          .clkb (CLK),
+          .clkb (i_CLK),
           .enb  (1'b1),
           .web  (we_b[i]),
           .addrb(addr_b[i]),
@@ -130,8 +155,8 @@ module bram_tree_pipelined #(
   //-------------------------------------------------------------------------
   // FSM
   //-------------------------------------------------------------------------
-  always_ff @(posedge CLK or negedge RSTn) begin : fsm_seq
-    if (!RSTn) begin
+  always_ff @(posedge i_CLK or negedge i_RSTn) begin : fsm_seq
+    if (!i_RSTn) begin
       state <= IDLE;
     end else begin
       state <= next_state;
@@ -143,36 +168,36 @@ module bram_tree_pipelined #(
     case (state)
       IDLE: begin
         next_state = READ_MEM;
-        if (!i_wrt && i_read) begin  // dequeue
+        if (cmd_dequeue) begin  // dequeue
           next_state = DEQUEUE;
-        end else if (i_wrt && i_read) begin  // replace
+        end else if (cmd_replace) begin  // replace
           next_state = REPLACE;
         end
       end
 
       READ_MEM: begin
         next_state = WAIT;
-        if (!i_wrt && i_read) begin  // dequeue
+        if (cmd_dequeue) begin  // dequeue
           next_state = DEQUEUE;
-        end else if (i_wrt && i_read) begin  // replace
+        end else if (cmd_replace) begin  // replace
           next_state = REPLACE;
         end
       end
 
       COMPARE_SWAP: begin
         next_state = WRITE_MEM;
-        if (!i_wrt && i_read) begin  // dequeue
+        if (cmd_dequeue) begin  // dequeue
           next_state = DEQUEUE;
-        end else if (i_wrt && i_read) begin  // replace
+        end else if (cmd_replace) begin  // replace
           next_state = REPLACE;
         end
       end
 
       WRITE_MEM: begin
         next_state = READ_MEM;
-        if (!i_wrt && i_read) begin  // dequeue
+        if (cmd_dequeue) begin  // dequeue
           next_state = DEQUEUE;
-        end else if (i_wrt && i_read) begin  // replace
+        end else if (cmd_replace) begin  // replace
           next_state = REPLACE;
         end
       end
@@ -187,9 +212,9 @@ module bram_tree_pipelined #(
 
       WAIT: begin
         next_state = COMPARE_SWAP;
-        if (!i_wrt && i_read) begin  // dequeue
+        if (cmd_dequeue) begin  // dequeue
           next_state = DEQUEUE;
-        end else if (i_wrt && i_read) begin  // replace
+        end else if (cmd_replace) begin  // replace
           next_state = REPLACE;
         end
       end
@@ -203,8 +228,8 @@ module bram_tree_pipelined #(
   //-------------------------------------------------------------------------
   // BRAM read&write, heap management
   //-------------------------------------------------------------------------
-  always_ff @(posedge CLK or negedge RSTn) begin : bram_seq
-    if (!RSTn) begin
+  always_ff @(posedge i_CLK or negedge i_RSTn) begin : bram_seq
+    if (!i_RSTn) begin
       parent_lvl <= '0;
       parent_idx <= '0;
       level_0 <= '1;
@@ -361,7 +386,7 @@ module bram_tree_pipelined #(
       end
 
       REPLACE: begin
-        next_level_0 = i_data;
+        next_level_0 = cmd_data;  // latched at accept; i_data may be gone by now
         next_parent_lvl = 'd0;
         next_parent_idx = 'd0;
       end
@@ -377,22 +402,23 @@ module bram_tree_pipelined #(
   //-------------------------------------------------------------------------
   // Queue size counter
   //-------------------------------------------------------------------------
-  always_ff @(posedge CLK or negedge RSTn) begin : queue_size_seq
-    if (!RSTn) begin
+  always_ff @(posedge i_CLK or negedge i_RSTn) begin : queue_size_seq
+    if (!i_RSTn) begin
       queue_size <= 0;
     end else begin
       queue_size <= next_queue_size;
     end
   end
 
+  // There is deliberately no enqueue branch: this module has no enqueue path in the FSM at all.
+  // The counter used to increment on (i_wrt && !i_read) so a master driving i_wrt alone bumped queue_size with no data ever
+  // inserted, over-reporting occupancy
   always_comb begin : queue_size_comb
     next_queue_size = queue_size;
-    if (i_wrt && !i_read) begin  // enqueue
-      next_queue_size = queue_size + 1;
-    end else if (!i_wrt && i_read) begin  // dequeue
-      next_queue_size = queue_size - 1;
-    end else if (i_wrt && i_read) begin  // replace
-      if (o_data == '1) begin //special case for following a reset, we need to replace all the values in 
+    if (cmd_dequeue) begin
+      next_queue_size = queue_size - 1; // cmd_dequeue is gated on !empty so this cannot underflow
+    end else if (cmd_replace) begin
+      if (o_data == '1) begin //special case for following a reset, we need to replace all the values in
         next_queue_size = queue_size + 1;
       end else if (queue_size == 0 && i_data != 0) begin  // this would be a special case for replace, function as enqueue
         next_queue_size = queue_size + 1;
@@ -402,11 +428,59 @@ module bram_tree_pipelined #(
     end
   end
 
+  // Sift-down completion detector
+  
+  //   root_done -- the root compare-swap has been written back, so level_0 now
+  //                holds the true maximum.  o_data is trustworthy from here,
+  //                even though the walk may still be sifting deeper down.
+
+  //   sift_done -- the whole walk terminated.  Only now may a new command be
+  //                accepted; one arriving earlier abandons the walk part-way
+  //                down and leaves the heap broken.
+  
+  // sift_done implies root_done so gating every command on sift_done alone is sufficient and
+  // root_done is free to report the earlier instant to a reader.
+  always_ff @(posedge i_CLK or negedge i_RSTn) begin : done_seq
+    if (!i_RSTn) begin
+      sift_done <= 1'b1;
+      root_done <= 1'b1;
+    end else begin
+      sift_done <= next_sift_done;
+      root_done <= next_root_done;
+    end
+  end
+
+  always_comb begin : done_comb
+    next_sift_done = sift_done;
+    next_root_done = root_done;
+    if (cmd_dequeue || cmd_replace) begin
+      next_sift_done = 1'b0;
+      next_root_done = 1'b0;
+    end else if (state == WRITE_MEM) begin
+      if (parent_lvl == '0)      next_root_done = 1'b1;  // root written back
+      if (next_parent_lvl == '0) next_sift_done = 1'b1;  // walk terminated
+    end
+  end
+
+  assign cmd_dequeue = !i_wrt && i_read && sift_done && (queue_size != 0);
+  assign cmd_replace = i_wrt && i_read && sift_done;
+
+  // The replace state does not execute until the cycle after the command is accepted, so sampling i_data there would read
+  // whatever the master happens to be driving one cycle later.  Every other queue in this repo captures i_data in the same cycle, 
+  // so latching the value here makes this module honor the same contract, and needs no special behavious from master
+  always_ff @(posedge i_CLK or negedge i_RSTn) begin : cmd_data_seq
+    if (!i_RSTn) begin
+      cmd_data <= '0;
+    end else if (cmd_replace) begin
+      cmd_data <= i_data;
+    end
+  end
+
   //-------------------------------------------------------------------------
   // Assignments for status and output.
   //-------------------------------------------------------------------------
-  assign o_full  = (queue_size == QUEUE_SIZE);
-  assign o_empty = (queue_size == 0);
+  assign o_write_ready = sift_done;
+  assign o_read_ready  = !(queue_size == 0) && root_done;
   assign o_data  = level_0;
 
 endmodule
