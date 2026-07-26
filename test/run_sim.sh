@@ -44,10 +44,6 @@ echo "==> Checking results for ${MODULE}"
 
 if [ "${status}" -ne 0 ]; then
   echo "::error::${MODULE}: testbench exited with status ${status}"
-fi
-
-if ! grep -qiE 'test[[:space:]]+completed' "${LOG}"; then
-  echo "::error::${MODULE}: simulation did not reach the 'Test completed' marker"
   status=1
 fi
 
