@@ -1,5 +1,5 @@
 `default_nettype none
-// bram_tree shim for the shared testbench body (hwpq/common/tb/hwpq_tb_common.svh).
+// bram_tree shim for the shared testbench body (test/common/hwpq_tb_common.svh).
 // bram_tree is pkg-locked, so the shim imports the package instead of
 // overriding params. It is enqueue-capable and single-instance, so ENQ_ENA=1
 // selects the enqueue-enabled program.

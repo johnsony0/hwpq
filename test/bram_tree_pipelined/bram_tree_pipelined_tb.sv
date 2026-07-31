@@ -1,5 +1,5 @@
 `default_nettype none
-// bram_tree_pipelined shim for the shared testbench body (hwpq/common/tb/hwpq_tb_common.svh).
+// bram_tree_pipelined shim for the shared testbench body (test/common/hwpq_tb_common.svh).
 //
 // settle contract is module-specific here: o_write_ready == sift_done is the true
 // "ready to accept the next command" signal (full never blocks a replace, so it is
