@@ -5,7 +5,7 @@
 // selects the enqueue-enabled program.
 import bram_tree_pkg::*;
 
-module shared_bram_tree_tb;
+module bram_tree_tb;
   localparam bit ENQ_ENA = 1;
 
   `include "hwpq_tb_common.svh"

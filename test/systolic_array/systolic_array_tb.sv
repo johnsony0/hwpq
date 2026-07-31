@@ -3,7 +3,7 @@
 
 // Note: the DUT reserves MIN_VALUE (0) as an invalid sentinel; the shared body's
 // stimulus is $urandom_range(1,1023), so it never drives 0 — required here.
-module shared_systolic_array_tb;
+module systolic_array_tb;
   localparam int QUEUE_SIZE = 16;
   localparam int DATA_WIDTH = 16;
   localparam bit ENQ_ENA    = 1;

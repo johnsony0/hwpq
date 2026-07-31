@@ -1,14 +1,14 @@
 `default_nettype none
-// register_array shim for the shared testbench body 
+// register_tree shim for the shared testbench body 
 
-module shared_register_array_tb;
-  localparam int QUEUE_SIZE = 128;
+module register_tree_tb;
+  localparam int QUEUE_SIZE = 31;
   localparam int DATA_WIDTH = 16;
   localparam bit ENQ_ENA    = 1;
 
   `include "hwpq_tb_common.svh"
 
-  register_array #(
+  register_tree #(
       .ENQ_ENA(ENQ_ENA),
       .QUEUE_SIZE(QUEUE_SIZE),
       .DATA_WIDTH(DATA_WIDTH)

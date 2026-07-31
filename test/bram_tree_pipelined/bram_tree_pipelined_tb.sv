@@ -6,7 +6,7 @@
 // deliberately not gated on full). o_read_ready exposes root_done, which goes high one
 // cycle earlier than sift_done, so OR-ing it into settled would release the next command
 // mid-sift and it would be dropped
-module shared_bram_tree_pipelined_tb;
+module bram_tree_pipelined_tb;
   localparam int QUEUE_SIZE = 15;
   localparam int DATA_WIDTH = 16;
   localparam bit ENQ_ENA    = 0;

@@ -1,7 +1,7 @@
 `default_nettype none
 // register_tree_pipelined shim (ENQ_ENA=0 / replace-only) for the shared testbench body.
 
-module shared_register_tree_pipelined_enq0_tb;
+module register_tree_pipelined_enq0_tb;
   localparam int QUEUE_SIZE = 15;
   localparam int DATA_WIDTH = 16;
   localparam bit ENQ_ENA    = 0;
