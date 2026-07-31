@@ -13,7 +13,7 @@ MODULE="$1"
 TB="$2"
 TOP="$3"
 
-SRC_DIR="hwpq/${MODULE}/rtl/src"
+SRC_DIR="hwpq/${MODULE}/src"
 # sharing build/${MODULE} would let the runs clobber each other's sim.vvp/sim.log.
 BUILD="build/${TOP}"
 LOG="${BUILD}/sim.log"
