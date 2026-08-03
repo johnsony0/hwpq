@@ -1,44 +1,47 @@
 #!/usr/bin/env bash
 #
 # Run every testbench in the suite
-# Usage: test/run_all_sims.sh
+# Usage: scripts/run_all_sims.sh
 #
 set -u
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# module_dir | top_module
+# module_dir | testbench_file | top_module
+#
+# Runs the shared-testbench shims (shared_*_tb) exclusively. The original per-module
+# testbenches are kept in the repo for reference but are not run here.
 TESTS=(
   # Enqueue-enabled runs
-  "register_array|register_array_tb"
-  "register_array_pipelined|register_array_pipelined_tb"
-  "register_tree|register_tree_tb"
-  "register_tree_pipelined|register_tree_pipelined_tb"
-  "systolic_array|systolic_array_tb"
-  "bram_tree|bram_tree_tb"
+  "register_array|hwpq/register_array/rtl/sim/shared_register_array_tb.sv|shared_register_array_tb"
+  "register_array_pipelined|hwpq/register_array_pipelined/rtl/sim/shared_register_array_pipelined_tb.sv|shared_register_array_pipelined_tb"
+  "register_tree|hwpq/register_tree/rtl/sim/shared_register_tree_tb.sv|shared_register_tree_tb"
+  "register_tree_pipelined|hwpq/register_tree_pipelined/rtl/sim/shared_register_tree_pipelined_tb.sv|shared_register_tree_pipelined_tb"
+  "systolic_array|hwpq/systolic_array/rtl/sim/shared_systolic_array_tb.sv|shared_systolic_array_tb"
+  "bram_tree|hwpq/bram_tree/rtl/sim/shared_bram_tree_tb.sv|shared_bram_tree_tb"
   # Replace-only (ENQ_ENA=0) runs: second sim of the same DUT
-  "register_array|register_array_enq0_tb"
-  "register_array_pipelined|register_array_pipelined_enq0_tb"
-  "register_tree|register_tree_enq0_tb"
-  "register_tree_pipelined|register_tree_pipelined_enq0_tb"
+  "register_array|hwpq/register_array/rtl/sim/shared_register_array_enq0_tb.sv|shared_register_array_enq0_tb"
+  "register_array_pipelined|hwpq/register_array_pipelined/rtl/sim/shared_register_array_pipelined_enq0_tb.sv|shared_register_array_pipelined_enq0_tb"
+  "register_tree|hwpq/register_tree/rtl/sim/shared_register_tree_enq0_tb.sv|shared_register_tree_enq0_tb"
+  "register_tree_pipelined|hwpq/register_tree_pipelined/rtl/sim/shared_register_tree_pipelined_enq0_tb.sv|shared_register_tree_pipelined_enq0_tb"
   # bram_tree_pipelined has no enqueue path -> replace-only only
-  "bram_tree_pipelined|bram_tree_pipelined_tb"
+  "bram_tree_pipelined|hwpq/bram_tree_pipelined/rtl/sim/shared_bram_tree_pipelined_tb.sv|shared_bram_tree_pipelined_tb"
   # Bug-reproduction (kept separate from the shared harness)
-  "systolic_array|systolic_array_bug_tb"
+  "systolic_array|hwpq/systolic_array/rtl/sim/systolic_array_bug_tb.sv|systolic_array_tb"
 )
 
 declare -a RESULTS=()
 overall_status=0
 
 for entry in "${TESTS[@]}"; do
-  IFS='|' read -r module top <<< "$entry"
+  IFS='|' read -r module tb top <<< "$entry"
   echo "#############################################################"
-  echo "# ${module}  (${top})"
+  echo "# ${module}  (${tb})"
   echo "#############################################################"
-  if "${SCRIPT_DIR}/run_sim.sh" "${module}" "${top}"; then
-    RESULTS+=("PASS  ${module}  ${top}")
+  if "${SCRIPT_DIR}/run_sim.sh" "${module}" "${tb}" "${top}"; then
+    RESULTS+=("PASS  ${module}  ${tb}")
   else
-    RESULTS+=("FAIL  ${module}  ${top}")
+    RESULTS+=("FAIL  ${module}  ${tb}")
     overall_status=1
   fi
   echo
