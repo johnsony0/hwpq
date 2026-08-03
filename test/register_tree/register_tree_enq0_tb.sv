@@ -1,14 +1,14 @@
 `default_nettype none
-// register_array_pipelined shim for the shared testbench body
+// register_tree shim (ENQ_ENA=0 / replace-only) for the shared testbench body.
 
-module shared_register_array_pipelined_tb;
-  localparam int QUEUE_SIZE = 64;
+module register_tree_enq0_tb;
+  localparam int QUEUE_SIZE = 31;
   localparam int DATA_WIDTH = 16;
-  localparam bit ENQ_ENA    = 1;
+  localparam bit ENQ_ENA    = 0;
 
   `include "hwpq_tb_common.svh"
 
-  register_array_pipelined #(
+  register_tree #(
       .ENQ_ENA(ENQ_ENA),
       .QUEUE_SIZE(QUEUE_SIZE),
       .DATA_WIDTH(DATA_WIDTH)
