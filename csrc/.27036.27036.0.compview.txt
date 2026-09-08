@@ -1,0 +1,7 @@
+Command exited with non-zero status 255
+{"vcs1":{"timestamp_begin":1782082711.757449979, "rt":0.31, "ut":0.10, "st":0.08}}
+{"SNPS_VCS_INTERNAL_ROOT_START_TIME": 1782082711.375013255}
+{"VCS_COMP_START_TIME": 1782082711.375013255}
+{"VCS_COMP_END_TIME": 1782082712.161727247}
+{"VCS_USER_OPTIONS": "-full64 -kdb -sverilog -lca -debug_access+all hwpq/register_tree/rtl/src/register_tree.sv hwpq/register_tree/rtl/sim/register_tree_tb.sv"}
+{"vcs1": {"peak_mem": 557072}}

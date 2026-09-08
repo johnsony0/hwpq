@@ -1,0 +1,103 @@
+@verdi rc file Version 1.0
+[General]
+saveDB = TRUE
+relativePath = FALSE
+saveSingleView = FALSE
+saveNWaveWinId = 
+VerdiVersion = Verdi_U-2023.03-SP2-5
+[KeyNote]
+Line1 = Automatic Backup 0
+Line2 = Save Open Database Information: Yes
+Line3 = Path Option: Absolute Paths
+Line4 = Windows Option: All Windows
+[OneSearch]
+isExisted = TRUE
+[TestBench]
+ConstrViewShow = 0
+InherViewShow = 0
+FSDBMsgShow = 0
+AnnotationShow = 0
+Console = TRUE
+powerDumped = 0
+[fusa]
+fdb_server = 
+fdb_proj = 
+fdb_campaign = 
+fdb_tool = 
+[hb]
+postSimFile = /home/jy5187/Documents/adv_proj/hwpq/inter.fsdb
+syncTime = 285
+viewport = 0 92 1560 867 0 0 517 1721
+activeNode = "hybrid_tree_tb.uut"
+activeScope = "hybrid_tree_tb.uut"
+activeFile = "hwpq/hybrid_tree/rtl/src/hybrid_tree.sv"
+interactiveMode = False
+viewType = Source
+simulatorMode = False
+sourceBeginLine = 105
+baMode = False
+srcLineNum = True
+AutoWrap = True
+IdentifyFalseLogic = False
+syncSignal = False
+traceMode = Hierarchical
+showTraceInSchema = True
+paMode = False
+funcMode = False
+powerAwareAnnot = True
+safetyAwareAnnot = True
+amsAnnot = True
+DnDtraceCrossHierOnly = True
+leadingZero = False
+signalPane = False
+SourceVerticalScrollLines = 5
+Scope1 = "hybrid_tree_tb.uut"
+Scope2 = "hybrid_tree_tb"
+Scope3 = "rams_tdp_rf_rf"
+Scope4 = "hybrid_tree_tb.uut.gen_bram_tree[1].bram_tree_inst"
+Scope5 = "hybrid_tree_tb.uut.gen_bram_tree[1]"
+Scope6 = "hybrid_tree_tb.uut.gen_bram_tree[3].bram_tree_inst"
+Scope7 = "hybrid_tree_tb.uut.gen_bram_tree[3]"
+Scope8 = "hybrid_tree_tb.uut.gen_bram_tree[2].bram_tree_inst"
+Scope9 = "hybrid_tree_tb.uut.gen_bram_tree[2]"
+Scope10 = "hybrid_tree_tb.uut.gen_bram_tree[0].bram_tree_inst"
+multipleSelection = 1 109 3 0 0
+sdfCheckUndef = FALSE
+simFlow = FALSE
+[hb.design]
+importCmd = "-dbdir" "simv.daidir/" 
+invokeDir = /home/jy5187/Documents/adv_proj/hwpq
+[hb.sourceTab.1]
+scope = hybrid_tree_tb.uut
+File = /home/jy5187/Documents/adv_proj/hwpq/hwpq/hybrid_tree/rtl/src/hybrid_tree.sv
+Line = 106
+[nMemoryManager]
+WaveformFile = /home/jy5187/Documents/adv_proj/hwpq/inter.fsdb
+UserActionNum = 0
+nMemWindowNum = 0
+[wave.0]
+viewPort = 0 25 1399 543 445 726
+primaryWindow = TRUE
+SessionFile = /home/jy5187/Documents/adv_proj/hwpq/verdiLog/novas_autosave.ses.wave.0
+displayGrid = FALSE
+hierarchicalName = FALSE
+snap = TRUE
+displayLeadingZeros = FALSE
+fixDelta = FALSE
+displayCursorMarker = FALSE
+autoUpdate = FALSE
+highlightGlitchs = FALSE
+waveformSyncCursorMarker = FALSE
+waveformSyncHorizontalRange = FALSE
+waveformSyncVerticalscroll = FALSE
+displayErrors = TRUE
+displayMsgSymbols = TRUE
+showMsgDescriptions = TRUE
+autoFit = FALSE
+displayDeltaY = FALSE
+centerCursor = FALSE
+fsaRegMask = TRUE
+fsaCoreMask = TRUE
+fsaSfsmMask = TRUE
+fsaEcrMask = TRUE
+tPropMask = TRUE

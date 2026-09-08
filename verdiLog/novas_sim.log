@@ -1,0 +1,75 @@
+Verdi>restart
+*Verdi* Loading libsscore_vcs202303.so
+FSDB Dumper for VCS, Release Verdi_U-2023.03-SP2-5, Linux x86_64/64bit, 04/15/2024
+(C) 1996 - 2024 by Synopsys, Inc.
+*Verdi* FSDB WARNING: The FSDB file already exists. Overwriting the FSDB file may crash the programs that are using this file.
+*Verdi* : Create FSDB file '/home/jy5187/Documents/adv_proj/hwpq/inter.fsdb'
+*Verdi* : Flush all FSDB Files at 0 s.
+*Verdi* : Enable RPC Server(1953305)
+*Verdi* : Flush all FSDB Files at 0 s.
+Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomization) is detected on the machine. To enable $save functionality, ASLR will be switched off and simv re-executed.
+Please use '-no_save' simv switch to avoid re-execution or '-suppress=ASLR_DETECTED_INFO' to suppress this message.
+Chronologic VCS simulator copyright 1991-2023
+Contains Synopsys proprietary information.
+Compiler version U-2023.03-SP2-5_Full64; Runtime version U-2023.03-SP2-5_Full64;  Jun 23 01:18 2026
+xterm-256color is Not a valid terminal...
+Verdi>run
+
+Test Case 1: Dequeue Test
+"hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: started at 4345s failed at 4345s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: at time 4345
+Dequeue: Node f value mismatch -> expected   994, got   313
+"hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: started at 4595s failed at 4595s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: at time 4595
+Dequeue: Node f value mismatch -> expected   984, got   313
+"hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: started at 4845s failed at 4845s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: at time 4845
+Dequeue: Node f value mismatch -> expected   959, got   313
+"hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: started at 5095s failed at 5095s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: at time 5095
+Dequeue: Node f value mismatch -> expected   802, got   313
+"hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: started at 5345s failed at 5345s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: at time 5345
+Dequeue: Node f value mismatch -> expected   753, got   313
+"hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: started at 5595s failed at 5595s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: at time 5595
+Dequeue: Node f value mismatch -> expected   699, got   313
+"hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: started at 5845s failed at 5845s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: at time 5845
+Dequeue: Node f value mismatch -> expected   619, got   313
+"hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: started at 6095s failed at 6095s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: at time 6095
+Dequeue: Node f value mismatch -> expected   613, got   313
+
+Test Case 2: Replace Test
+"hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 92: hybrid_tree_tb.unnamed$$_4.unnamed$$_5: started at 6195s failed at 6195s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 92: hybrid_tree_tb.unnamed$$_4.unnamed$$_5: at time 6195
+Replace: Node f value mismatch -> expected   570, got   281
+"hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 92: hybrid_tree_tb.unnamed$$_4.unnamed$$_5: started at 6295s failed at 6295s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 92: hybrid_tree_tb.unnamed$$_4.unnamed$$_5: at time 6295
+Replace: Node f value mismatch -> expected   554, got   197
+"hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 92: hybrid_tree_tb.unnamed$$_4.unnamed$$_5: started at 6395s failed at 6395s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 92: hybrid_tree_tb.unnamed$$_4.unnamed$$_5: at time 6395
+Replace: Node f value mismatch -> expected   475, got   117
+
+Test completed! 
+$finish called from file "hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", line 97.
+$finish at simulation time                 6495
+Simulation complete, time is 6495.
+hybrid_tree_tb.sv, 97 :     $finish;
+           V C S   S i m u l a t i o n   R e p o r t 
+Time: 6495
+CPU Time:      0.160 seconds;       Data structure size:   0.0Mb
+Tue Jun 23 18:55:28 2026
+debExit

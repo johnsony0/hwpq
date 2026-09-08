@@ -1,0 +1,11 @@
+{"vcs1":{"timestamp_begin":1784006439.849874403, "rt":1.02, "ut":0.36, "st":0.48}}
+{"vcselab":{"timestamp_begin":1784006441.119810314, "rt":0.30, "ut":0.12, "st":0.06}}
+{"link":{"timestamp_begin":1784006441.844622191, "rt":0.76, "ut":0.22, "st":0.38}}
+{"SNPS_VCS_INTERNAL_ROOT_START_TIME": 1784006438.858636956}
+{"VCS_DEPTH": 0}
+{"VCS_COMP_END_TIME": 1784006443.204006814}
+{"vcs1": {"peak_mem": 437080}}
+{"vcselab": {"peak_mem": 198880}}
+{"elabcom":{"timestamp_begin":1784006440.269866849,"rt":0.15, "ut":0.03, "st":0.06}}
+{"kdb": {"elabcom_name":"<Kdbresolver>", "log_dir":"simv.daidir/kdbresolverLog"}}
+{"VCS_USER_OPTIONS": "-full64 -kdb -sverilog -lca -debug_access+all hwpq/systolic_array/rtl/src/systolic_array.sv hwpq/systolic_array/rtl/sim/systolic_array_bug_tb.sv"}

@@ -1,0 +1,9 @@
+{"vcs1":{"timestamp_begin":1782188523.833662394, "rt":0.45, "ut":0.21, "st":0.11}}
+{"vcselab":{"timestamp_begin":1782188524.359524843, "rt":0.29, "ut":0.14, "st":0.06}}
+{"link":{"timestamp_begin":1782188524.710113125, "rt":0.26, "ut":0.11, "st":0.07}}
+{"SNPS_VCS_INTERNAL_ROOT_START_TIME": 1782188523.423585267}
+{"VCS_COMP_START_TIME": 1782188523.423585267}
+{"VCS_COMP_END_TIME": 1782188525.156012105}
+{"VCS_USER_OPTIONS": "-full64 -kdb -sverilog -lca -debug_access+all hwpq/hybrid_tree/rtl/src/comparator.sv hwpq/hybrid_tree/rtl/src/rams_tdp_rf_rf.sv hwpq/hybrid_tree/rtl/src/pipelined_bram_tree.sv hwpq/hybrid_tree/rtl/sim/pipelined_bram_tree_tb.sv"}
+{"vcs1": {"peak_mem": 558696}}
+{"vcselab": {"peak_mem": 254916}}

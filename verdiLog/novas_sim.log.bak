@@ -1,0 +1,227 @@
+Invoking simulator...
+Verdi>simv -sml=verdi +fsdb+gate=off -ucli2Proc -ucli
+Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomization) is detected on the machine. To enable $save functionality, ASLR will be switched off and simv re-executed.
+Please use '-no_save' simv switch to avoid re-execution or '-suppress=ASLR_DETECTED_INFO' to suppress this message.
+*Verdi* Loading libsscore_vcs202303.so
+FSDB Dumper for VCS, Release Verdi_U-2023.03-SP2-5, Linux x86_64/64bit, 04/15/2024
+(C) 1996 - 2024 by Synopsys, Inc.
+*Verdi* : Create FSDB file '/home/jy5187/Documents/adv_proj/hwpq/inter.fsdb'
+*Verdi* : Flush all FSDB Files at 0 s.
+*Verdi* : Enable RPC Server(1402322)
+Chronologic VCS simulator copyright 1991-2023
+Contains Synopsys proprietary information.
+Compiler version U-2023.03-SP2-5_Full64; Runtime version U-2023.03-SP2-5_Full64;  Jun 22 17:28 2026
+xterm-256color is Not a valid terminal...
+Verdi>fsdbDumpvars 1 "bram_tree_tb.uut.CLK"  +all +trace_process;fsdbDumpflush 
+
+*Verdi* : Dumping the signal (bram_tree_tb.uut.CLK).
+*Verdi* : Flush all FSDB Files at 0 s.
+
+Verdi>fsdbDumpvars 1 "bram_tree_tb.uut.RSTn"  +all +trace_process;fsdbDumpflush 
+
+*Verdi* : Dumping the signal (bram_tree_tb.uut.RSTn).
+*Verdi* : Flush all FSDB Files at 0 s.
+
+Verdi>fsdbDumpvars 1 "bram_tree_tb.uut.i_wrt"  +all +trace_process;fsdbDumpflush 
+
+*Verdi* : Dumping the signal (bram_tree_tb.uut.i_wrt).
+*Verdi* : Flush all FSDB Files at 0 s.
+
+Verdi>fsdbDumpvars 1 "bram_tree_tb.uut"  +all +trace_process;fsdbDumpflush 
+
+*Verdi* : Begin traversing the scope (bram_tree_tb.uut), layer (1).
+*Verdi* : Enable +trace_process and +all dumping.
+*Verdi* : End of traversing.
+*Verdi* : Flush all FSDB Files at 0 s.
+
+Verdi>fsdbDumpvars 0 "bram_tree_tb.uut.gen_bram\[2\].bram_inst.ram"  +all +trace_process;fsdbDumpflush 
+
+*Verdi* : Dumping the signal (bram_tree_tb.uut.gen_bram[2].bram_inst.ram).
+*Verdi* : Flush all FSDB Files at 0 s.
+
+Verdi>fsdbDumpvars 0 "bram_tree_tb.uut.gen_bram\[3\].bram_inst.ram"  +all +trace_process;fsdbDumpflush 
+
+*Verdi* : Dumping the signal (bram_tree_tb.uut.gen_bram[3].bram_inst.ram).
+*Verdi* : Flush all FSDB Files at 0 s.
+
+Verdi>run
+
+Test Case 1: Dequeue Test
+
+Warning-[DT-MCEQ] Method called on empty queue
+hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv, 156
+  "rsort" method called on empty queue
+  Please make sure that the queue is not empty.
+
+
+Test Case 2: Replace Test
+"hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv", 109: bram_tree_tb.unnamed$$_2: started at 11875s failed at 11875s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv", 109: bram_tree_tb.unnamed$$_2: at time 11875
+Replace: Node f value mismatch -> expected   834, got   727
+"hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv", 109: bram_tree_tb.unnamed$$_2: started at 12125s failed at 12125s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv", 109: bram_tree_tb.unnamed$$_2: at time 12125
+Replace: Node f value mismatch -> expected   802, got   166
+"hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv", 109: bram_tree_tb.unnamed$$_2: started at 12625s failed at 12625s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv", 109: bram_tree_tb.unnamed$$_2: at time 12625
+Replace: Node f value mismatch -> expected   727, got   625
+"hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv", 109: bram_tree_tb.unnamed$$_2: started at 12875s failed at 12875s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv", 109: bram_tree_tb.unnamed$$_2: at time 12875
+Replace: Node f value mismatch -> expected   636, got   189
+"hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv", 109: bram_tree_tb.unnamed$$_2: started at 13125s failed at 13125s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv", 109: bram_tree_tb.unnamed$$_2: at time 13125
+Replace: Node f value mismatch -> expected   625, got   162
+"hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv", 109: bram_tree_tb.unnamed$$_2: started at 13375s failed at 13375s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv", 109: bram_tree_tb.unnamed$$_2: at time 13375
+Replace: Node f value mismatch -> expected   588, got     2
+"hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv", 109: bram_tree_tb.unnamed$$_2: started at 13875s failed at 13875s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv", 109: bram_tree_tb.unnamed$$_2: at time 13875
+Replace: Node f value mismatch -> expected   564, got   332
+"hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv", 109: bram_tree_tb.unnamed$$_2: started at 14125s failed at 14125s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv", 109: bram_tree_tb.unnamed$$_2: at time 14125
+Replace: Node f value mismatch -> expected   493, got   311
+"hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv", 109: bram_tree_tb.unnamed$$_2: started at 14375s failed at 14375s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv", 109: bram_tree_tb.unnamed$$_2: at time 14375
+Replace: Node f value mismatch -> expected   481, got     8
+"hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv", 109: bram_tree_tb.unnamed$$_2: started at 14875s failed at 14875s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv", 109: bram_tree_tb.unnamed$$_2: at time 14875
+Replace: Node f value mismatch -> expected   477, got   361
+"hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv", 109: bram_tree_tb.unnamed$$_2: started at 15375s failed at 15375s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv", 109: bram_tree_tb.unnamed$$_2: at time 15375
+Replace: Node f value mismatch -> expected   396, got   316
+
+Test Case 3: Stress Test
+Dequeue: Queue empty, skipping dequeue
+Dequeue: Queue empty, skipping dequeue
+Dequeue: Queue empty, skipping dequeue
+"hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv", 134: bram_tree_tb.unnamed$$_5: started at 17625s failed at 17625s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv", 134: bram_tree_tb.unnamed$$_5: at time 17625
+Replace: Node f value mismatch -> expected   316, got   107
+Dequeue: Queue empty, skipping dequeue
+"hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv", 134: bram_tree_tb.unnamed$$_5: started at 19125s failed at 19125s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv", 134: bram_tree_tb.unnamed$$_5: at time 19125
+Replace: Node f value mismatch -> expected   307, got   245
+Dequeue: Queue empty, skipping dequeue
+Dequeue: Queue empty, skipping dequeue
+Dequeue: Queue empty, skipping dequeue
+Dequeue: Queue empty, skipping dequeue
+"hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv", 134: bram_tree_tb.unnamed$$_5: started at 23625s failed at 23625s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv", 134: bram_tree_tb.unnamed$$_5: at time 23625
+Replace: Node f value mismatch -> expected   111, got     8
+Dequeue: Queue empty, skipping dequeue
+Dequeue: Queue empty, skipping dequeue
+Dequeue: Queue empty, skipping dequeue
+Dequeue: Queue empty, skipping dequeue
+Dequeue: Queue empty, skipping dequeue
+Dequeue: Queue empty, skipping dequeue
+Dequeue: Queue empty, skipping dequeue
+
+Warning-[DT-MCEQ] Method called on empty queue
+hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv, 156
+  "rsort" method called on empty queue
+  Please make sure that the queue is not empty.
+
+
+Warning-[DT-MCEQ] Method called on empty queue
+hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv, 156
+  "rsort" method called on empty queue
+  Please make sure that the queue is not empty.
+
+
+Warning-[DT-MCEQ] Method called on empty queue
+hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv, 156
+  "rsort" method called on empty queue
+  Please make sure that the queue is not empty.
+
+Dequeue: Queue empty, skipping dequeue
+
+Warning-[DT-MCEQ] Method called on empty queue
+hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv, 156
+  "rsort" method called on empty queue
+  Please make sure that the queue is not empty.
+
+Dequeue: Queue empty, skipping dequeue
+
+Warning-[DT-MCEQ] Method called on empty queue
+hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv, 156
+  "rsort" method called on empty queue
+  Please make sure that the queue is not empty.
+
+
+Warning-[DT-MCEQ] Method called on empty queue
+hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv, 156
+  "rsort" method called on empty queue
+  Please make sure that the queue is not empty.
+
+
+Warning-[DT-MCEQ] Method called on empty queue
+hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv, 156
+  "rsort" method called on empty queue
+  Please make sure that the queue is not empty.
+
+Dequeue: Queue empty, skipping dequeue
+
+Warning-[DT-MCEQ] Method called on empty queue
+hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv, 156
+  "rsort" method called on empty queue
+  Please make sure that the queue is not empty.
+
+Dequeue: Queue empty, skipping dequeue
+Dequeue: Queue empty, skipping dequeue
+Dequeue: Queue empty, skipping dequeue
+
+Warning-[DT-MCEQ] Method called on empty queue
+hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv, 156
+  "rsort" method called on empty queue
+  Please make sure that the queue is not empty.
+
+Dequeue: Queue empty, skipping dequeue
+Dequeue: Queue empty, skipping dequeue
+
+Warning-[DT-MCEQ] Method called on empty queue
+hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv, 156
+  "rsort" method called on empty queue
+  Please make sure that the queue is not empty.
+
+
+Warning-[DT-MCEQ] Method called on empty queue
+hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv, 156
+  "rsort" method called on empty queue
+  Please make sure that the queue is not empty.
+
+
+Warning-[DT-MCEQ] Method called on empty queue
+hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv, 156
+  "rsort" method called on empty queue
+  Please make sure that the queue is not empty.
+
+
+Warning-[DT-MCEQ] Method called on empty queue
+hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv, 156
+  "rsort" method called on empty queue
+  Please make sure that the queue is not empty.
+
+
+Test completed! 
+$finish called from file "hwpq/bram_tree_pipelined/rtl/sim/pipelined_bram_tree_tb.sv", line 146.
+$finish at simulation time                40375
+Simulation complete, time is 40375.
+pipelined_bram_tree_tb.sv, 146 :     $finish;
+           V C S   S i m u l a t i o n   R e p o r t 
+Time: 40375
+CPU Time:      0.190 seconds;       Data structure size:   0.0Mb
+Mon Jun 22 18:49:53 2026
+debExit

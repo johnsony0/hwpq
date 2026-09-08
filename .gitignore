@@ -46,3 +46,9 @@ obj_dir
 *.vcd
 
 build/
+
+*.fsdb
+novas*
+simv
+verdi_config_file
+ucli.key

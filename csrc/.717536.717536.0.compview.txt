@@ -1,0 +1,9 @@
+{"vcs1":{"timestamp_begin":1781761807.850148540, "rt":0.42, "ut":0.17, "st":0.13}}
+{"vcselab":{"timestamp_begin":1781761808.345448685, "rt":0.29, "ut":0.14, "st":0.06}}
+{"link":{"timestamp_begin":1781761808.691852215, "rt":0.22, "ut":0.09, "st":0.08}}
+{"SNPS_VCS_INTERNAL_ROOT_START_TIME": 1781761807.467687143}
+{"VCS_COMP_START_TIME": 1781761807.467687143}
+{"VCS_COMP_END_TIME": 1781761809.107469092}
+{"VCS_USER_OPTIONS": "-full64 -kdb -sverilog -lca -debug_access+all hwpq/systolic_array/rtl/src/systolic_array.sv hwpq/systolic_array/rtl/sim/systolic_array_tb.sv"}
+{"vcs1": {"peak_mem": 556032}}
+{"vcselab": {"peak_mem": 254936}}

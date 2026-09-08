@@ -1,0 +1,3 @@
+Command Line: /eda/synopsys/vcs/U-2023.03-SP2-5/linux64/bin/elabcom -logdir /home/jy5187/Documents/adv_proj/hwpq/sim.daidir/elabcomLog -simvdaidir /home/jy5187/Documents/adv_proj/hwpq/sim.daidir -lib /home/jy5187/Documents/adv_proj/hwpq/sim.daidir/work -saveLevel -elab /home/jy5187/Documents/adv_proj/hwpq/sim.daidir/kdb -simflow -simdir /home/jy5187/Documents/adv_proj/hwpq/sim.daidir/kdb_libs -topfile /home/jy5187/Documents/adv_proj/hwpq/sim.daidir/.elabcomTopFile -ssv -ssy -Lf work +disable_message+C00380+C00381 +disable_message+C00388+C00389
+uname(Linux ecs03.poly.edu 4.18.0-553.89.1.el8_10.x86_64 #1 SMP Sat Nov 29 00:49:18 EST 2025 x86_64)
+au time 0.089337 0.005452 0.016893 delta 90324992 90324992 total 301445120 301445120

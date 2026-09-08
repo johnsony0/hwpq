@@ -1,0 +1,9 @@
+Command exited with non-zero status 255
+{"vcs1":{"timestamp_begin":1784006001.400796560, "rt":0.61, "ut":0.15, "st":0.24}}
+{"SNPS_VCS_INTERNAL_ROOT_START_TIME": 1784006000.309183299}
+{"VCS_DEPTH": 0}
+{"VCS_COMP_END_TIME": 1784006002.306453970}
+{"vcs1": {"peak_mem": 425424}}
+{"elabcom":{"timestamp_begin":1784006001.871247750,"rt":0.18, "ut":0.03, "st":0.07}}
+{"kdb": {"elabcom_name":"<Kdbresolver>", "log_dir":"simv.daidir/kdbresolverLog"}}
+{"VCS_USER_OPTIONS": "-full64 -kdb -sverilog -lca -debug_access+all hwpq/systolic_array/rtl/src/systolic_array.sv hwpq/systolic_array/rtl/sim/systolic_array_bug_tb.sv"}

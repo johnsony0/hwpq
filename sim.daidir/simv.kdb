@@ -1,0 +1,25 @@
+rc file Version 1.0
+
+[Design]
+COMPILE_PATH=/home/jy5187/Documents/adv_proj/hwpq
+VCS_HOME=/eda/synopsys/vcs/U-2023.03-SP2-5
+VERDI_HOME=/eda/synopsys/verdi/U-2023.03-SP2-5
+SystemC=FALSE
+UUM=FALSE
+KDB=TRUE
+USE_NOVAS_HOME=FALSE
+COSIM=FALSE
+TOP=register_tree_tb 
+OPTION=-ssv -ssy 
+ELAB_OPTION=-ssv -ssy 
+ELAB=TRUE
+SIMV_WRAPPER=FALSE
+[vcs]
+RUN_ELABCOM=unset TURBO_LOG_DIR ;\rm -rf /home/jy5187/Documents/adv_proj/hwpq/sim.daidir/elabcomLog ;/eda/synopsys/vcs/U-2023.03-SP2-5/linux64/bin/elabcom -logdir /home/jy5187/Documents/adv_proj/hwpq/sim.daidir/elabcomLog  -simvdaidir /home/jy5187/Documents/adv_proj/hwpq/sim.daidir  -lib /home/jy5187/Documents/adv_proj/hwpq/sim.daidir/work  -saveLevel  -elab /home/jy5187/Documents/adv_proj/hwpq/sim.daidir/kdb -simflow -simdir /home/jy5187/Documents/adv_proj/hwpq/sim.daidir/kdb_libs -topfile /home/jy5187/Documents/adv_proj/hwpq/sim.daidir/.elabcomTopFile -ssv -ssy  -Lf work +disable_message+C00380+C00381 +disable_message+C00388+C00389  >& /dev/null  && echo Success >& /home/jy5187/Documents/adv_proj/hwpq/sim.daidir/.elabcomReport || echo Fail >& /home/jy5187/Documents/adv_proj/hwpq/sim.daidir/.elabcomReport; \rm -rf /home/jy5187/Documents/adv_proj/hwpq/sim.daidir/work.lib++ /home/jy5187/Documents/adv_proj/hwpq/sim.daidir/kdb_libs/ 
+
+[Value]
+WREALX=ffff534e50535f58
+WREALZ=ffff534e50535f5a
+
+[CompInfo]
+FLOW_OPTS=-kdb -ssv -ssy 

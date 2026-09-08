@@ -1,0 +1,11 @@
+{"vcs1":{"timestamp_begin":1784000721.937915940, "rt":1.06, "ut":0.42, "st":0.47}}
+{"vcselab":{"timestamp_begin":1784000723.241009982, "rt":0.31, "ut":0.12, "st":0.06}}
+{"link":{"timestamp_begin":1784000723.969946090, "rt":0.74, "ut":0.24, "st":0.34}}
+{"SNPS_VCS_INTERNAL_ROOT_START_TIME": 1784000720.898853413}
+{"VCS_DEPTH": 0}
+{"VCS_COMP_END_TIME": 1784000725.308985297}
+{"vcs1": {"peak_mem": 437708}}
+{"vcselab": {"peak_mem": 193112}}
+{"elabcom":{"timestamp_begin":1784000722.394112944,"rt":0.16, "ut":0.03, "st":0.07}}
+{"kdb": {"elabcom_name":"<Kdbresolver>", "log_dir":"simv.daidir/kdbresolverLog"}}
+{"VCS_USER_OPTIONS": "-full64 -kdb -sverilog -lca -debug_access+all hwpq/bram_tree/rtl/src/bram_tree.sv hwpq/bram_tree/rtl/src/rams_tdp_rf_rf.sv hwpq/bram_tree/rtl/sim/bram_tree_tb.sv"}

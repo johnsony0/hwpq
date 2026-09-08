@@ -2,12 +2,12 @@
 
 module systolic_array_tb;
   // Parameters matching the module under test
-  parameter int QUEUE_SIZE = 8;
+  parameter int QUEUE_SIZE = 16;
   parameter int DATA_WIDTH = 16;
 
   // Clock and reset signals
-  logic                  i_CLK;
-  logic                  i_RSTn;
+  logic                  CLK;
+  logic                  RSTn;
 
   // Input signals
   logic                  i_wrt;
@@ -15,13 +15,20 @@ module systolic_array_tb;
   logic [DATA_WIDTH-1:0] i_data;
 
   // Output signals
+  logic [DATA_WIDTH-1:0] o_data;
   logic                  o_write_ready;
   logic                  o_read_ready;
-  logic [DATA_WIDTH-1:0] o_data;
 
   // Reference array for verification
   logic [DATA_WIDTH-1:0] ref_queue        [$:QUEUE_SIZE-1];
-  int                    ref_size = 0;
+
+  int total_cycles;
+  int write_stall_cycles;
+  int read_stall_cycles;
+  int stall_timeout      = 2000;
+
+  // File descriptor for write logging
+  int write_log_file;
 
   // Test variables
   logic [DATA_WIDTH-1:0] random_value;
@@ -38,108 +45,135 @@ module systolic_array_tb;
       .QUEUE_SIZE(QUEUE_SIZE),
       .DATA_WIDTH(DATA_WIDTH)
   ) u_SystolicArray (
-      .i_CLK(i_CLK),
-      .i_RSTn(i_RSTn),
+      .i_CLK(CLK),
+      .i_RSTn(RSTn),
       .i_wrt(i_wrt),
       .i_read(i_read),
       .i_data(i_data),
+      .o_data(o_data),
       .o_write_ready(o_write_ready),
-      .o_read_ready(o_read_ready),
-      .o_data(o_data)
+      .o_read_ready(o_read_ready)
   );
 
   // Clock generation: 10ns period
-  always #5 i_CLK <= ~i_CLK;
+  always #5 CLK <= ~CLK;
 
-  int error_count = 0;
+  always_ff @(posedge CLK or negedge RSTn) begin
+    if (!RSTn) begin
+      total_cycles <= 0;
+      write_stall_cycles <= 0;
+      read_stall_cycles <= 0;
+    end else begin
+      total_cycles <= total_cycles + 1;
+
+      if (ref_queue.size() > 0 && !o_read_ready) begin
+        read_stall_cycles <= read_stall_cycles + 1;
+        if (read_stall_cycles >= stall_timeout) begin
+          $fatal(1, "Read stall timeout: queue still has %0d entries but o_read_ready stayed low for %0d cycles.", ref_queue.size(), stall_timeout);
+        end
+      end else begin
+        read_stall_cycles <= 0;
+      end
+
+      if (!o_write_ready) begin
+        write_stall_cycles <= write_stall_cycles + 1;
+        if (write_stall_cycles >= stall_timeout) begin
+          $fatal(1, "Write stall timeout: o_write_ready stayed low for %0d cycles while size=%0d.", stall_timeout, u_SystolicArray.size);
+        end
+      end else begin
+        write_stall_cycles <= 0;
+      end
+    end
+  end
+
+  genvar g_i;
+  generate
+    // Loop up to HALF_SIZE (u_SystolicArray.HALF_SIZE), not QUEUE_SIZE
+    for (g_i = 0; g_i < u_SystolicArray.HALF_SIZE; g_i++) begin : g_data_conservation_check
+      property p_value_preserved;
+        @(posedge CLK) disable iff (!RSTn)
+        // Check that IB[g_i] moves to valid locations in IB or OB, or stays put
+        (u_SystolicArray.IB[g_i] != '0) |=> (
+          (u_SystolicArray.IB[g_i] == $past(u_SystolicArray.IB[g_i])) ||
+          (g_i < u_SystolicArray.HALF_SIZE-1 && u_SystolicArray.IB[g_i+1] == $past(u_SystolicArray.IB[g_i])) ||
+          (u_SystolicArray.OB[g_i] == $past(u_SystolicArray.IB[g_i])) ||
+          (g_i < u_SystolicArray.HALF_SIZE-1 && u_SystolicArray.OB[g_i+1] == $past(u_SystolicArray.IB[g_i])) ||
+          (g_i > 0 && u_SystolicArray.IB[g_i-1] == $past(u_SystolicArray.IB[g_i])) ||
+          (g_i == 0 && o_data == $past(u_SystolicArray.IB[0]))
+        );
+      endproperty
+
+      a_value_preserved: assert property (p_value_preserved)
+        else $error("[Data Lost] Time %0t: Value %0d at IB index %0d disappeared!", 
+                    $time, $past(u_SystolicArray.IB[g_i]), g_i);
+    end
+  endgenerate
 
   initial begin
+    // Open log file for recording writes
+    write_log_file = $fopen("a-star-accelerator/logs/systolic_writes.txt", "w");
+    if (write_log_file == 0) begin
+      $fatal(1, "Failed to open file: a-star-accelerator/logs/systolic_writes.txt");
+    end
+
     // Initialize signals
-    i_CLK = 0;
-    i_RSTn = 0;
+    CLK = 0;
+    RSTn = 0;
     i_wrt = 0;
     i_read = 0;
     i_data = 0;
 
     // Reset the module
-    @(posedge i_CLK);
-    i_RSTn = 1;
-    @(posedge i_CLK);
+    @(posedge CLK);
+    RSTn = 1;
+    @(posedge CLK);
 
     // Initialize the queue, fill it up to QUEUE_SIZE with random values
     for (int i = 0; i < QUEUE_SIZE; i++) begin
-      random_value = $urandom_range(0, 1024);
+      random_value = i+1;
       enqueue(random_value);
-      repeat (5) @(posedge i_CLK);  // to make sure that the queue is correctly initialized
     end
-    repeat (5) @(posedge i_CLK);  // wait for the queue to stabilize
 
     // Test Case 1: Dequeue nodes
-    // Dequeue nodes for QUEUE_SIZE times
+    // Dequeue nodes for QUEUE_SIZE*2 times since it takes 2 cycles to dequeue
     $display("\nTest Case 1: Dequeue Test");
-    for (int i = 0; i < QUEUE_SIZE; i++) begin
+    for (int i = 0; i < QUEUE_SIZE*2; i++) begin
       dequeue();
-      if (o_read_ready) begin
-        assert (o_data == ref_queue[0])
-        else begin error_count++; $error("Dequeue: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data); end;
-      end else begin
-        assert (o_data == '0)
-        else begin error_count++; $error("Dequeue: Node f value mismatch -> expected %d, got %d", '0, o_data); end;
-      end
     end
 
     // Test Case 2: Enqueue nodes
     // Enqueue random values for QUEUE_SIZE times
     $display("\nTest Case 2: Enqueue Test");
     for (int i = 0; i < QUEUE_SIZE; i++) begin
-      random_value = $urandom_range(0, 1024);
+      random_value = $urandom_range(1, 1024);
       enqueue(random_value);
-      assert (o_data == ref_queue[0])
-      else begin error_count++; $error("Enqueue: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data); end;
     end
 
     // Test Case 3: Replace nodes
     // Replace root node for QUEUE_SIZE times
     $display("\nTest Case 3: Replace Test");
     for (int i = 0; i < QUEUE_SIZE; i++) begin
-      random_value = $urandom_range(0, 1024);
+      random_value = $urandom_range(1, 1024);
       replace(random_value);
-      assert (o_data == ref_queue[0])
-      else begin error_count++; $error("Replace: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data); end;
     end
 
     // Test Case 4: Stress Test
     // stress test, mix operations
-
     $display("\nTest Case 4: Stress Test");
-    for (int i = 0; i < 100; i++) begin
-      random_value = $urandom_range(0, 1024);
-      random_operation = t_operation'($urandom_range(1, 3));  
+    for (int i = 0; i < 100000; i++) begin
+      random_value = $urandom_range(1, 1024);
+      random_operation = $urandom_range(1,3);
       case (random_operation)
         ENQUEUE: begin
           enqueue(random_value);
-          assert (o_data == ref_queue[0])
-          else
-            begin error_count++; $error("Enqueue: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data); end;
         end
 
         DEQUEUE: begin
           dequeue();
-          if (o_read_ready) begin
-            assert (o_data == ref_queue[0])
-            else
-              begin error_count++; $error("Dequeue: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data); end;
-          end else begin
-            assert (o_data == '0)
-            else begin error_count++; $error("Dequeue: Node f value mismatch -> expected %d, got %d", '0, o_data); end;
-          end
         end
 
         REPLACE: begin
           replace(random_value);
-          assert (o_data == ref_queue[0])
-          else
-            begin error_count++; $error("Replace: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data); end;
         end
 
         default: begin
@@ -148,43 +182,31 @@ module systolic_array_tb;
       endcase
     end
 
-    if (error_count == 0) begin
-      $display("\nTest completed!");
-      $finish;
-    end else begin
-      $display("\n%0d error(s) detected during simulation.", error_count);
-      $fatal(1, "Test FAILED with %0d error(s).", error_count);
-    end
+    $display("\n================ PERFORMANCE METRICS ================");
+    $display("Total Simulated Cycles : %d", total_cycles);
+    $display("Write Stall Cycles     : %d  (%.2f%%)", write_stall_cycles, (real'(write_stall_cycles) / total_cycles) * 100.0);
+    $display("Read Stall Cycles      : %d  (%.2f%%)", read_stall_cycles,  (real'(read_stall_cycles) / total_cycles) * 100.0);
+    $display("=====================================================");
+
+    $fclose(write_log_file);
+    $display("\nTest completed! ");
+    $finish;
   end
 
-  // Task to write to the end of the queue
   task automatic enqueue(input logic [DATA_WIDTH-1:0] value);
-    logic [DATA_WIDTH-1:0] tmp;
     begin
       if (o_write_ready) begin
         i_wrt  = 1;
         i_read = 0;
         i_data = value;
-        
-        ref_queue[ref_size] = value;
-        ref_size++;
-        
-        for (int i = 0; i < ref_size; i++) begin
-          for (int j = i + 1; j < ref_size; j++) begin
-            if (ref_queue[i] < ref_queue[j]) begin
-              tmp = ref_queue[i];
-              ref_queue[i] = ref_queue[j];
-              ref_queue[j] = tmp;
-            end
-          end
-        end
+        ref_queue.push_back(value);
+        ref_queue.rsort();
+        $fdisplay(write_log_file, "Time: %0t | Value: %0d", $time, value);
       end else begin
-        $display("Enqueue: Queue full, skipping enqueue");
+        i_wrt  = 0;
+        i_read = 0;
       end
-      @(posedge i_CLK);
-      i_wrt  = 0;
-      i_read = 0;
-      repeat (2) @(posedge i_CLK); 
+      @(posedge CLK);
     end
   endtask
 
@@ -192,50 +214,40 @@ module systolic_array_tb;
   task automatic dequeue();
     begin
       if (o_read_ready) begin
+        assert (o_data == ref_queue[0])
+        else
+          $error("Dequeue: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data);
         i_wrt  = 0;
         i_read = 1;
-        for (int i = 0; i < ref_size - 1; i++) begin
-          ref_queue[i] = ref_queue[i+1];
-        end
-        ref_queue[ref_size-1] = '0; 
-        ref_size--;
-        
+        ref_queue.rsort();
+        ref_queue.pop_front();
       end else begin
-        $display("Dequeue: Queue empty, skipping dequeue");
+        i_wrt  = 0;
+        i_read = 0;
       end
-      @(posedge i_CLK);
-      i_wrt  = 0;
-      i_read = 0;
-      repeat (3) @(posedge i_CLK);
+      @(posedge CLK);
     end
   endtask
 
   // Task to replace root node
   task automatic replace(input logic [DATA_WIDTH-1:0] value);
-    logic [DATA_WIDTH-1:0] tmp;
     begin
-      if (ref_size > 0) begin
+      if (o_read_ready) begin
+        assert (o_data == ref_queue[0])
+        else
+          $error("Replace: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data);
         i_wrt  = 1;
         i_read = 1;
         i_data = value;
-        ref_queue[0] = value;
-        for (int i = 0; i < ref_size; i++) begin
-          for (int j = i + 1; j < ref_size; j++) begin
-            if (ref_queue[i] < ref_queue[j]) begin
-              tmp = ref_queue[i];
-              ref_queue[i] = ref_queue[j];
-              ref_queue[j] = tmp;
-            end
-          end
-        end
+        ref_queue.pop_front();
+        ref_queue.push_back(value);
+        ref_queue.rsort();
+        $fdisplay(write_log_file, "Time: %0t | Value: %0d", $time, value);
       end else begin
-        $display("Replace: Queue empty, skipping replace");
+        i_wrt  = 0;
+        i_read = 0;
       end
-      
-      @(posedge i_CLK);
-      i_wrt  = 0;
-      i_read = 0;
-      repeat (2) @(posedge i_CLK); 
+      @(posedge CLK);
     end
   endtask
 

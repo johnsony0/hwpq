@@ -1,0 +1,7 @@
+Command exited with non-zero status 255
+{"vcs1":{"timestamp_begin":1784004583.530421537, "rt":0.19, "ut":0.07, "st":0.08}}
+{"SNPS_VCS_INTERNAL_ROOT_START_TIME": 1784004582.617948331}
+{"VCS_DEPTH": 0}
+{"VCS_COMP_END_TIME": 1784004583.914471322}
+{"vcs1": {"peak_mem": 427164}}
+{"VCS_USER_OPTIONS": "-full64 -kdb -sverilog -lca -debug_access+all hwpq/systolic_array/rtl/src/systolic_array.sv hwpq/systolic_array/rtl/sim/systolic_array_bug_tb.sv"}

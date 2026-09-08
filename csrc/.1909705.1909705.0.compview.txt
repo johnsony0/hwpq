@@ -1,0 +1,7 @@
+Command exited with non-zero status 255
+{"vcs1":{"timestamp_begin":1782191504.676315045, "rt":0.32, "ut":0.08, "st":0.07}}
+{"SNPS_VCS_INTERNAL_ROOT_START_TIME": 1782191504.251968811}
+{"VCS_COMP_START_TIME": 1782191504.251968811}
+{"VCS_COMP_END_TIME": 1782191505.098182112}
+{"VCS_USER_OPTIONS": "-full64 -kdb -sverilog -lca -debug_access+all hwpq/hybrid_tree/rtl/src/comparator.sv hwpq/hybrid_tree/rtl/src/rams_tdp_rf_rf.sv hwpq/hybrid_tree/rtl/src/pipelined_bram_tree.sv hwpq/hybrid_tree/rtl/sim/pipelined_bram_tree_tb.sv"}
+{"vcs1": {"peak_mem": 556836}}

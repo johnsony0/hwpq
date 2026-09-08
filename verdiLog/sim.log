@@ -1,0 +1,282 @@
+Command: /home/jy5187/Documents/adv_proj/hwpq/simv -sml=verdi +fsdb+gate=off -ucli2Proc -ucli -l /home/jy5187/Documents/adv_proj/hwpq/verdiLog/sim.log
+Chronologic VCS simulator copyright 1991-2023
+Contains Synopsys proprietary information.
+Compiler version U-2023.03-SP2-5_Full64; Runtime version U-2023.03-SP2-5_Full64;  Jun 23 01:18 2026
+
+ucli% loaddl -simv /eda/synopsys/verdi/U-2023.03-SP2-5/share/PLI/VCS/LINUXAMD64/libnovas.so LoadFSDBDumpCmd;LoadFSDBDumpCmd
+LoadFSDBDumpCmd success
+ucli% config ckptfsdbcheck off;config endofsim noexit;config onfail {enable all};config followactivescope on;catch {setUcliVerdiConnected};set watch::resultTagsForVerdiBP {<ucli_break_bp_status_begin> <ucli_break_bp_status_end>};set ucliCore::support_restore_through_stask_in_verdi 1;cbug::config pretty_print auto;fsdbDumpfile {/home/jy5187/Documents/adv_proj/hwpq/inter.fsdb} ;fsdbDumpflush ; 
+*Verdi* Loading libsscore_vcs202303.so
+FSDB Dumper for VCS, Release Verdi_U-2023.03-SP2-5, Linux x86_64/64bit, 04/15/2024
+(C) 1996 - 2024 by Synopsys, Inc.
+*Verdi* FSDB WARNING: The FSDB file already exists. Overwriting the FSDB file may crash the programs that are using this file.
+*Verdi* : Create FSDB file '/home/jy5187/Documents/adv_proj/hwpq/inter.fsdb'
+*Verdi* : Flush all FSDB Files at 0 s.
+
+ucli% fsdbDumpvars 1 "hybrid_tree_tb.uut"  +all +trace_process;fsdbDumpflush 
+*Verdi* : Begin traversing the scope (hybrid_tree_tb.uut), layer (1).
+*Verdi* : Enable +trace_process and +all dumping.
+*Verdi* : End of traversing.
+*Verdi* : Flush all FSDB Files at 0 s.
+
+ucli% fsdbDumpvars 0 "\[geneScope\] hybrid_tree_tb.uut.gen_bram_tree\[0\]"  +all +trace_process;fsdbDumpflush 
+*Verdi* : Begin traversing the scope (hybrid_tree_tb.uut.gen_bram_tree[0]), layer (0).
+*Verdi* : Enable +trace_process and +all dumping.
+*Verdi* : End of traversing.
+*Verdi* : Flush all FSDB Files at 0 s.
+
+ucli% fsdbDumpvars 0 "hybrid_tree_tb.uut.gen_bram_tree\[0\].bram_tree_inst"  +all +trace_process;fsdbDumpflush 
+*Verdi* : Begin traversing the scope (hybrid_tree_tb.uut.gen_bram_tree[0].bram_tree_inst), layer (0).
+*Verdi* : Enable +trace_process and +all dumping.
+*Verdi* : End of traversing.
+*Verdi* : Flush all FSDB Files at 0 s.
+
+ucli% fsdbDumpvars 0 "hybrid_tree_tb.uut.gen_bram_tree\[2\].bram_tree_inst.level_0"  +all +trace_process;fsdbDumpflush 
+*Verdi* : Dumping the signal (hybrid_tree_tb.uut.gen_bram_tree[2].bram_tree_inst.level_0).
+*Verdi* : Flush all FSDB Files at 0 s.
+
+ucli% fsdbDumpvars 0 "hybrid_tree_tb.uut.gen_bram_tree\[2\].bram_tree_inst.level_1"  +all +trace_process;fsdbDumpflush 
+*Verdi* : Dumping the signal (hybrid_tree_tb.uut.gen_bram_tree[2].bram_tree_inst.level_1).
+*Verdi* : Flush all FSDB Files at 0 s.
+
+ucli% fsdbDumpvars 0 "hybrid_tree_tb.uut.gen_bram_tree\[3\].bram_tree_inst.level_0"  +all +trace_process;fsdbDumpflush 
+*Verdi* : Dumping the signal (hybrid_tree_tb.uut.gen_bram_tree[3].bram_tree_inst.level_0).
+*Verdi* : Flush all FSDB Files at 0 s.
+
+ucli% fsdbDumpvars 0 "hybrid_tree_tb.uut.gen_bram_tree\[3\].bram_tree_inst.level_1"  +all +trace_process;fsdbDumpflush 
+*Verdi* : Dumping the signal (hybrid_tree_tb.uut.gen_bram_tree[3].bram_tree_inst.level_1).
+*Verdi* : Flush all FSDB Files at 0 s.
+
+ucli% fsdbDumpvars 0 "hybrid_tree_tb.uut.gen_bram_tree\[1\].bram_tree_inst.level_0"  +all +trace_process;fsdbDumpflush 
+*Verdi* : Dumping the signal (hybrid_tree_tb.uut.gen_bram_tree[1].bram_tree_inst.level_0).
+*Verdi* : Flush all FSDB Files at 0 s.
+
+ucli% fsdbDumpvars 0 "hybrid_tree_tb.uut.gen_bram_tree\[1\].bram_tree_inst.level_1"  +all +trace_process;fsdbDumpflush 
+*Verdi* : Dumping the signal (hybrid_tree_tb.uut.gen_bram_tree[1].bram_tree_inst.level_1).
+*Verdi* : Flush all FSDB Files at 0 s.
+
+ucli% synEnv::hasFataled
+0
+ucli% ucliCore::getToolPID
+1953305
+ucli% sps_interactive
+*Verdi* : Enable RPC Server(1953305)
+
+ucli% ucliCore::getToolPID
+1953305
+ucli% ucliCore::getToolPID
+1953305
+ucli% if {[catch {ucliCore::setFocus tool}]} {}
+
+ucli% puts $ucliCore::nativeUcliMode
+0
+
+ucli% ucliCore::getToolTopPID
+1953305
+ucli% pid
+1953322
+ucli% synUtils::sendTool -active {_icl_createSharedMemory /tmp/vcs_dve_general.jy5187.1953305 }
+
+ucli% if { [info vars watch::vcbp_str_len_limit_of_get_value] != ""} {set watch::vcbp_str_len_limit_of_get_value 1024}
+1024
+ucli% info command stateVerdiChangeCB
+
+ucli% proc stateVerdiChangeCB args { if {$ucliGUI::state eq "terminated"} {puts "\n<VERDI_Terminated>\n";catch {setVerdiSimTerminated}}}
+
+ucli% trace variable ucliGUI::state wu stateVerdiChangeCB
+
+ucli% if {[catch {rename synopsys::restore verdiHack::restore} ]} {puts "0"}
+
+ucli% proc synopsys::restore {args} { verdiHack::restore $args; puts "\n<VERDI_RESTORE>\n"}
+
+ucli% if {[catch {rename quit verdiHack::quit} ]} {puts "0"}
+
+ucli% proc quit {args} { if {[string length $args] == 0} { verdiHack::quit; } elseif {([string equal "-h" $args] == 1)||([string equal "-he" $args] == 1)||([string equal "-hel" $args] == 1)||([string equal "-help" $args] == 1)} { puts "\n quit           # Exit the simulation.\n \[-noprompt\]        (Exit the simulation and Verdi.)\n"} elseif {([string equal "-n" $args] == 1)||([string equal "-no" $args] == 1)||([string equal "-nop" $args] == 1)||([string equal "-nopr" $args] == 1)||([string equal "-nopro" $args] == 1)||([string equal "-noprom" $args] == 1)||([string equal "-nopromp" $args] == 1)||([string equal "-noprompt" $args] == 1)} { puts "\nVERDI_EXIT_N\n" } else { verdiHack::quit $args; } }
+
+ucli% if {[catch {rename exit verdiHack::exit} ]} {puts "0"}
+
+ucli% proc exit {args} { if {[string length $args] == 0} { verdiHack::exit; } elseif {([string equal "-h" $args] == 1)||([string equal "-he" $args] == 1)||([string equal "-hel" $args] == 1)||([string equal "-help" $args] == 1)} { puts "\n exit           # Exit the simulation.\n \[-noprompt\]        (Exit the simulation and Verdi.)\n"} elseif {([string equal "-n" $args] == 1)||([string equal "-no" $args] == 1)||([string equal "-nop" $args] == 1)||([string equal "-nopr" $args] == 1)||([string equal "-nopro" $args] == 1)||([string equal "-noprom" $args] == 1)||([string equal "-nopromp" $args] == 1)||([string equal "-noprompt" $args] == 1)} { puts "\nVERDI_EXIT_N\n" } else { verdiHack::exit $args; } }
+
+ucli% proc checkpoint::beforeRecreate {} { sps_interactive }
+
+ucli% if {[catch {ucliCore::setFocus tool}]} {}
+
+ucli% save::getUserdefinedProcs
+::stateVerdiChangeCB ::LoadFSDBDumpCmd
+ucli% set ucliCore::resultTagsForVerdi [list <?special_verdi_begin?> <?special_verdi_end?>]
+<?special_verdi_begin?> <?special_verdi_end?>
+ucli% if {[catch {ucliCore::setFocus tool}]} {}
+
+ucli% fsdbDumpflush 
+*Verdi* : Flush all FSDB Files at 0 s.
+
+ucli% if {[catch {ucliCore::setFocus tool}]} {}
+
+ucli% fsdbDumpflush 
+*Verdi* : Flush all FSDB Files at 0 s.
+
+ucli% senv
+activeDomain: Verilog
+activeFile: hwpq/hybrid_tree/rtl/src/rams_tdp_rf_rf.sv
+activeFrame: -1
+activeLine: 3
+activeScope: rams_tdp_rf_rf
+activeThread: 6
+endCol: 0
+file: hwpq/hybrid_tree/rtl/src/rams_tdp_rf_rf.sv
+frame: -1
+fsdbFilename: 
+hasTB: 1
+inputFilename: 
+keyFilename: ucli.key
+line: 3
+logFilename: /home/jy5187/Documents/adv_proj/hwpq/verdiLog/sim.log
+macroIndex: -1
+macroOffset: -1
+pid: 1953305
+scope: rams_tdp_rf_rf
+startCol: 0
+state: stopped
+thread: 6
+time: 0
+timePrecision: 1 s
+vcdFilename: 
+vpdFilename:
+ucli% synUtils::resolveSourceFilename hwpq/hybrid_tree/rtl/src/rams_tdp_rf_rf.sv
+hwpq/hybrid_tree/rtl/src/rams_tdp_rf_rf.sv
+ucli% puts $::ucliCore::cbug_active
+0
+
+ucli% if {[catch {ucliCore::setFocus tool}]} {}
+
+ucli% checkpoint -list -all
+There are no checkpoints present.
+ucli% if {[catch {ucliCore::setFocus tool}]} {}
+
+ucli% stop
+No stop points are set
+ucli% if {[catch {ucliCore::setFocus tool}]} {}
+
+ucli% run
+<slp!&*()_+>
+
+Test Case 1: Dequeue Test
+<slb!&*()_+>---<sls!&*()_+>loc: -1<sls!&*()_+>src: hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv<sls!&*()_+>line: 75<sls!&*()_+>time: 4095<sls!&*()_+>length: 0<sls!&*()_+>...<sls!&*()_+><sle!&*()_+>
+"hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: started at 4345s failed at 4345s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: at time 4345
+Dequeue: Node f value mismatch -> expected   994, got   313
+"hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: started at 4595s failed at 4595s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: at time 4595
+Dequeue: Node f value mismatch -> expected   984, got   313
+"hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: started at 4845s failed at 4845s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: at time 4845
+Dequeue: Node f value mismatch -> expected   959, got   313
+"hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: started at 5095s failed at 5095s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: at time 5095
+Dequeue: Node f value mismatch -> expected   802, got   313
+"hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: started at 5345s failed at 5345s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: at time 5345
+Dequeue: Node f value mismatch -> expected   753, got   313
+"hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: started at 5595s failed at 5595s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: at time 5595
+Dequeue: Node f value mismatch -> expected   699, got   313
+"hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: started at 5845s failed at 5845s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: at time 5845
+Dequeue: Node f value mismatch -> expected   619, got   313
+"hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: started at 6095s failed at 6095s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 79: hybrid_tree_tb.unnamed$$_1.unnamed$$_2: at time 6095
+Dequeue: Node f value mismatch -> expected   613, got   313
+<slp!&*()_+>
+
+Test Case 2: Replace Test
+<slb!&*()_+>---<sls!&*()_+>loc: -1<sls!&*()_+>src: hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv<sls!&*()_+>line: 88<sls!&*()_+>time: 6095<sls!&*()_+>length: 0<sls!&*()_+>...<sls!&*()_+><sle!&*()_+>
+"hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 92: hybrid_tree_tb.unnamed$$_4.unnamed$$_5: started at 6195s failed at 6195s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 92: hybrid_tree_tb.unnamed$$_4.unnamed$$_5: at time 6195
+Replace: Node f value mismatch -> expected   570, got   281
+"hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 92: hybrid_tree_tb.unnamed$$_4.unnamed$$_5: started at 6295s failed at 6295s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 92: hybrid_tree_tb.unnamed$$_4.unnamed$$_5: at time 6295
+Replace: Node f value mismatch -> expected   554, got   197
+"hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 92: hybrid_tree_tb.unnamed$$_4.unnamed$$_5: started at 6395s failed at 6395s
+	Offending '(o_data == ref_queue[0])'
+Error: "hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", 92: hybrid_tree_tb.unnamed$$_4.unnamed$$_5: at time 6395
+Replace: Node f value mismatch -> expected   475, got   117
+<slp!&*()_+>
+
+Test completed! 
+<slb!&*()_+>---<sls!&*()_+>loc: -1<sls!&*()_+>src: hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv<sls!&*()_+>line: 96<sls!&*()_+>time: 6495<sls!&*()_+>length: 0<sls!&*()_+>...<sls!&*()_+><sle!&*()_+>
+$finish called from file "hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv", line 97.
+$finish at simulation time                 6495
+Simulation complete, time is 6495.
+hybrid_tree_tb.sv, 97 :     $finish;
+
+ucli% synEnv::hasFataled
+0
+ucli% ucliCore::getToolPID
+1953305
+ucli% save::getUserdefinedProcs
+::stateVerdiChangeCB ::LoadFSDBDumpCmd
+ucli% if {[catch {ucliCore::setFocus tool}]} {}
+
+ucli% fsdbDumpflush 
+*Verdi* : Flush all FSDB Files at 6,495 s.
+
+ucli% senv
+activeDomain: TB
+activeFile: hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv
+activeFrame: 0
+activeLine: 97
+activeScope: hybrid_tree_tb
+activeThread: 8
+endCol: 0
+file: hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv
+frame: 0
+fsdbFilename: 
+hasTB: 1
+inputFilename: 
+keyFilename: ucli.key
+line: 97
+logFilename: /home/jy5187/Documents/adv_proj/hwpq/verdiLog/sim.log
+macroIndex: -1
+macroOffset: -1
+pid: 1953305
+scope: hybrid_tree_tb
+startCol: 0
+state: stopped
+thread: 8
+time: 6495
+timePrecision: 1 s
+vcdFilename: 
+vpdFilename:
+ucli% synUtils::resolveSourceFilename hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv
+hwpq/hybrid_tree/rtl/sim/hybrid_tree_tb.sv
+ucli% puts $::ucliCore::cbug_active
+0
+
+ucli% if {[catch {ucliCore::setFocus tool}]} {}
+
+ucli% checkpoint -list -all
+There are no checkpoints present.
+ucli% if {[catch {ucliCore::setFocus tool}]} {}
+
+ucli% stop
+No stop points are set
+ucli% if {[catch {ucliCore::setFocus tool}]} {}
+
+ucli% finish; quit
+           V C S   S i m u l a t i o n   R e p o r t 
+Time: 6495
+CPU Time:      0.160 seconds;       Data structure size:   0.0Mb
+Tue Jun 23 18:55:28 2026
+
+<VERDI_Terminated>
+

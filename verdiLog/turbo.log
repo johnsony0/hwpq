@@ -1,0 +1,27 @@
+Command Line: /eda/synopsys/verdi/U-2023.03-SP2-5/platform/LINUXAMD64/bin/Novas -dbdir simv.daidir/
+uname(Linux ecs03.poly.edu 4.18.0-553.89.1.el8_10.x86_64 #1 SMP Sat Nov 29 00:49:18 EST 2025 x86_64)
+[MessageBox] The KDB has been updated by other processes. Reload the KDB to update it; otherwise, you may get unexpected results.
+[MessageBox] The KDB has been updated by other processes. Reload the KDB to update it; otherwise, you may get unexpected results.
+[MessageBox] The KDB has been updated by other processes. Reload the KDB to update it; otherwise, you may get unexpected results.
+type= DS_SCOPE element= 1 field= 1
+VERILOG hybrid_tree_tb
+VERILOG uut
+-----
+second field= DebussyLib
+third field= hybrid_tree
+type= DS_SCOPE element= 1 field= 1
+VERILOG hybrid_tree_tb
+VERILOG uut
+VERILOG gen_bram_tree[0]
+-----
+second field= DebussyLib
+third field= gen_bram_tree[0]
+type= DS_SCOPE element= 1 field= 1
+VERILOG hybrid_tree_tb
+VERILOG uut
+VERILOG gen_bram_tree[0]
+VERILOG bram_tree_inst
+-----
+second field= DebussyLib
+third field= pipelined_bram_tree
+au time 64249.573486 345.731024 723.003360 delta 272154624 272154624 total 873750528 873750528

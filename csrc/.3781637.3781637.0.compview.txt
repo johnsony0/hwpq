@@ -1,0 +1,5 @@
+{"vcs1":{"timestamp_begin":1782070510.785330470, "rt":0.11, "ut":0.04, "st":0.03}}
+{"SNPS_VCS_INTERNAL_ROOT_START_TIME": 1782070510.410003227}
+{"VCS_COMP_START_TIME": 1782070510.410003227}
+{"VCS_COMP_END_TIME": 1782070510.936210385}
+{"VCS_USER_OPTIONS": "-full64 -kdb -sverilog -lca -debug_access+all hwpq/register_array_pipelined/rtl/src/register_array_pipelined.sv hwpq/register_array_pipelined/rtl/sim/register_array_pipelined_tb.sv"}

@@ -1,0 +1,9 @@
+{"vcs1":{"timestamp_begin":1782106888.410429726, "rt":0.50, "ut":0.24, "st":0.14}}
+{"vcselab":{"timestamp_begin":1782106888.990667251, "rt":0.29, "ut":0.14, "st":0.07}}
+{"link":{"timestamp_begin":1782106889.343870166, "rt":0.26, "ut":0.11, "st":0.08}}
+{"SNPS_VCS_INTERNAL_ROOT_START_TIME": 1782106888.033251739}
+{"VCS_COMP_START_TIME": 1782106888.033251739}
+{"VCS_COMP_END_TIME": 1782106889.800727898}
+{"VCS_USER_OPTIONS": "-full64 -kdb -sverilog -lca -debug_access+all hwpq/register_tree/rtl/src/register_tree.sv hwpq/register_tree/rtl/sim/register_tree_tb.sv"}
+{"vcs1": {"peak_mem": 556368}}
+{"vcselab": {"peak_mem": 271368}}

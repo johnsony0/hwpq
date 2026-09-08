@@ -1,0 +1,152 @@
+0
+35
++itf+/eda/synopsys/vcs/Y-2026.03/linux64/lib/vcsdp_lite.tab
++vcsd1
++vpi
+-Mamsrun=
+-Masflags=
+-Mcc=gcc
+-Mcfl= -pipe -fPIC -O -I/eda/synopsys/vcs/Y-2026.03/include
+-Mcplusplus=g++
+-Mcrt0=
+-Mcrtn=
+-Mcsrc=
+-Mexternalobj=
+-Mldflags= -rdynamic
+-Mobjects= /eda/synopsys/vcs/Y-2026.03/linux64/lib/libvirsim.so /eda/synopsys/vcs/Y-2026.03/linux64/lib/liberrorinf.so /eda/synopsys/vcs/Y-2026.03/linux64/lib/libsnpsmalloc.so /eda/synopsys/vcs/Y-2026.03/linux64/lib/libvfs.so
+-Mout=simv
+-Msaverestoreobj=/eda/synopsys/vcs/Y-2026.03/linux64/lib/vcs_save_restore_new.o
+-Msyslibs=/eda/synopsys/verdi/Y-2026.03/share/PLI/VCS/LINUX64/pli.a -ldl
+-Mvcsaceobjs=
+-Mxcflags= -pipe -fPIC -I/eda/synopsys/vcs/Y-2026.03/include
+-Mxllcflags=
+-P
+-Xhdlxmropt
+-Xufe=2steps
+-debug_access+all
+-fsdb
+-full64
+-gen_obj
+-kdb
+-lca
+-picarchive
+-sverilog
+/eda/synopsys/vcs/Y-2026.03/linux64/bin/vcs1fe
+/eda/synopsys/verdi/Y-2026.03/share/PLI/VCS/LINUX64/verdi.tab
+hwpq/systolic_array/rtl/src/systolic_array.sv
+hwpq/systolic_array/rtl/sim/systolic_array_bug_tb.sv
+99
+__MODULES_SHARE_PATH=/eda/siemens/Calibre/aok_cal_2026.1_35.25/bin:2
+__MODULES_SHARE_MANPATH=:1
+__MODULES_LMINIT=module use --append /usr/share/Modules/modulefiles:module use --append /etc/modulefiles:module use --append /usr/share/modulefiles
+_LMFILES_=/home/shared/modules/siemens:/home/shared/modules/cadence/IC251:/home/shared/modules/synopsys
+XPEDION=/eda/keysight/goldengate
+XDG_SESSION_TYPE=tty
+XDG_SESSION_ID=286
+XDG_SESSION_CLASS=user
+XDG_RUNTIME_DIR=/run/user/4492965
+WV_HOME=/eda/synopsys/wv/Y-2026.03-1
+VSCODE_NONCE=676ec79c-3b2b-4e27-a95a-fa1155627267
+VSCODE_IPC_HOOK_CLI=/run/user/4492965/vscode-ipc-e687dec3-594e-4a0e-9364-fe2df518aa7f.sock
+VSCODE_GIT_IPC_HANDLE=/run/user/4492965/vscode-git-5771af0b05.sock
+VSCODE_GIT_ASKPASS_NODE=/home/jy5187/.vscode-server/cli/servers/Stable-fc3def6774c76082adf699d366f31a557ce5573f/server/node
+VSCODE_GIT_ASKPASS_MAIN=/home/jy5187/.vscode-server/cli/servers/Stable-fc3def6774c76082adf699d366f31a557ce5573f/server/extensions/git/dist/askpass-main.js
+VSCODE_GIT_ASKPASS_EXTRA_ARGS=
+VMR_MODE_FLAG=64
+VERDI_HOME=/eda/synopsys/verdi/Y-2026.03
+VENDOR=unknown
+VC_STATIC_HOME=/eda/synopsys/vc_static/Y-2026.03-SP1
+VCS_TARGET_ARCH=amd64
+VCS_PYTHON3=/eda/synopsys/vcs/Y-2026.03/linux64/bin/Python3/bin/python3
+VCS_PATHMAP_PRELOAD_DONE=1
+VCS_MX_HOME_INTERNAL=1
+VCS_MODE_FLAG=64
+VCS_LCAMSG_PRINT_OFF=1
+VCS_INTERNAL_CONVERTEDLIBS=
+VCS_HOME=/eda/synopsys/vcs/Y-2026.03
+VCS_EXEC_DONE=1
+VCS_DEPTH=0
+VCS_ARG_ADDED_FOR_TMP=1
+VCS_ARCH=linux64
+USE_CALIBRE_VCO=aok
+UNAME=/bin/uname
+TOOL_HOME=/eda/synopsys/vcs/Y-2026.03/linux64
+TERM_PROGRAM_VERSION=1.128.0
+TERM_PROGRAM=vscode
+S_COLORS=auto
+SYN_HOME=/eda/synopsys/syn/Y-2026.03
+SYNOPSYS_LC_ROOT=/eda/synopsys/lc/Y-2026.03
+SUBSTRATESTORMSITE=/eda/cadence/IC251/share/sna/etc/cdslib/substrateLib
+SUBSTRATESTORMHOME=/eda/cadence/IC251
+STARRC_HOME=/eda/synopsys/starrc/Y-2026.03-SP1
+SSH_CONNECTION=10.27.9.235 52720 128.238.147.83 22
+SSH_CLIENT=10.27.9.235 52720 22
+SNPS_VERDI_INTERNAL_LP_XML_NEW_FLOW=1
+SNPS_VCS_VHDL_WRAPPER_KDB=1
+SNPS_VCS_PYTHON3=/eda/synopsys/vcs/Y-2026.03/linux64/bin/Python3/bin/python3
+SNPS_VCS_CLANG_PATH=/eda/synopsys/vcs/Y-2026.03/linux64/clang
+SNPS_INTERNAL_VCS_LINUX_OS=linux
+SELINUX_USE_CURRENT_RANGE=
+SELINUX_ROLE_REQUESTED=
+SELINUX_LEVEL_REQUESTED=
+SCRNAME=vcs
+SCRIPT_NAME=vcs
+SCL_RECONNECT_STATUS_CHECK=1
+SCL_RECONNECT_QUEUE_RESET=5
+PRIME_HOME=/eda/synopsys/prime/Y-2026.03
+OVA_UUM=0
+OSTYPE=linux
+OPENSSL_MODULES=/eda/synopsys/vcs/Y-2026.03/linux64/lib/openssl/3.5.0/ossl-modules
+OA_HOME=/eda/cadence/IC251/oa_v22.62.020
+MOTD_SHOWN=pam
+MODULES_CMD=/usr/share/Modules/libexec/modulecmd.tcl
+MODULESHOME=/usr/share/Modules
+MODULEPATH=/etc/scl/modulefiles:/etc/scl/modulefiles:/etc/scl/modulefiles:/usr/share/Modules/modulefiles:/etc/modulefiles:/usr/share/modulefiles
+MMSIM=/eda/cadence/SPECTRE251
+MGLS_LICENSE_FILE=1717@pyke.poly.edu
+MGC_HOME=/eda/siemens/Calibre/aok_cal_2026.1_35.25
+MGC_FDI_OA_VERSION=22.62
+MATLAB_USE_USERPATH=1
+LOADEDMODULES=/home/shared/modules/siemens:/home/shared/modules/cadence/IC251:/home/shared/modules/synopsys
+LIBERATE_LORDER=TOKENS
+LESSOPEN=||/usr/bin/lesspipe.sh %s
+LC_ALL=C
+KRB5CCNAME=KCM:
+ICV_HOME_DIR=/eda/synopsys/icvalidator/Y-2026.03-SP1
+ICC2_HOME=/eda/synopsys/icc2/Y-2026.03
+HSP_HOME=/eda/synopsys/hspice/Y-2026.03-1/hspice
+HPEESOF_DIR=/eda/ads
+HOSTTYPE=x86_64-linux
+GROUP=jy5187
+GIT_ASKPASS=/home/jy5187/.vscode-server/cli/servers/Stable-fc3def6774c76082adf699d366f31a557ce5573f/server/extensions/git/dist/askpass.sh
+EMXHOME=/eda/cadence/EMX20252
+DEBUGINFOD_IMA_CERT_PATH=/etc/keys/ima:
+DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/4492965/bus
+COPILOT_DEBUG_NONCE=0090359179dc82a6e7f41190557a15c0
+COLORTERM=truecolor
+CLS_CDSD_COMPATIBILITY_LOCKING=NO
+CDS_Netlisting_Mode=Analog
+CDS_LOAD_ENV=CSF
+CDS_LIC_FILE=5281@pyke.poly.edu:/opt/cadence/License/cadence.lic
+CDS_HOME=/eda/cadence/IC251
+CDS_AUTO_64BIT=ALL
+CDSHOME=/eda/cadence/IC251
+CDK_DIR=/eda/cadence/local/ncsu-cdk-1.6.0.beta
+CC_HOME=/eda/synopsys/customcompiler/Y-2026.03-1
+CALIBRE_HOME=/eda/siemens/Calibre/aok_cal_2026.1_35.25
+ASSURA=/eda/cadence/ASSURA_IC251
+0
+0
+5
+1772202875 /eda/synopsys/vcs/Y-2026.03/linux64/packages/snps_msv_nettype_pkg/AN.DB
+1784006955 hwpq/systolic_array/rtl/sim/systolic_array_bug_tb.sv
+1784005728 hwpq/systolic_array/rtl/src/systolic_array.sv
+1771650375 /eda/synopsys/verdi/Y-2026.03/share/PLI/VCS/LINUX64/verdi.tab
+1772165244 /eda/synopsys/vcs/Y-2026.03/linux64/lib/vcsdp_lite.tab
+4
+1772168022 /eda/synopsys/vcs/Y-2026.03/linux64/lib/libvirsim.so
+1772166263 /eda/synopsys/vcs/Y-2026.03/linux64/lib/liberrorinf.so
+1772166260 /eda/synopsys/vcs/Y-2026.03/linux64/lib/libsnpsmalloc.so
+1772166251 /eda/synopsys/vcs/Y-2026.03/linux64/lib/libvfs.so
+1784006961 simv.daidir
+-1 partitionlib
