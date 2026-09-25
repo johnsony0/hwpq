@@ -2974,16 +2974,15 @@ static inline U asm_bsf (U in)
 }
 
 
-void  rmaPropagate0_p_simv_daidir (UB  * pcode, scalar  val);
 void  rmaPropagate0_simv_daidir (UB  * pcode, scalar  val);
-void  rmaPropagate0_f_simv_daidir (UB  * pcode, scalar  val, U  I617, scalar  * I1517, U  did);
-void  rmaPropagate0_r_simv_daidir (UB  * pcode);
-void  rmaPropagate0_wn_simv_daidir (UB  * pcode, scalar  val);
-void  rmaPropagate1_p_simv_daidir (UB  * pcode, scalar  val);
 void  rmaPropagate1_simv_daidir (UB  * pcode, scalar  val);
-void  rmaPropagate1_f_simv_daidir (UB  * pcode, scalar  val, U  I617, scalar  * I1517, U  did);
-void  rmaPropagate1_r_simv_daidir (UB  * pcode);
-void  rmaPropagate1_wn_simv_daidir (UB  * pcode, scalar  val);
+void  rmaPropagate2_simv_daidir (UB  * pcode, scalar  val);
+void  rmaPropagate3_simv_daidir (UB  * pcode, scalar  val);
+void  rmaPropagate4_simv_daidir (UB  * pcode, scalar  val);
+void  rmaPropagate5_simv_daidir (UB  * pcode, scalar  val);
+void  rmaPropagate6_simv_daidir (UB  * pcode, scalar  val);
+void  rmaPropagate7_simv_daidir (UB  * pcode, scalar  val);
+void  rmaPropagate8_simv_daidir (UB  * pcode, scalar  val);
 void  schedNewEvent (struct dummyq_struct * I1494, EBLK  * I1197, U  I624);
 
 #ifdef __cplusplus

@@ -278,14 +278,6 @@ bScpecifyCellNameCase = False
 bSpecifyPinNameCase = False
 CellNameToCase = 
 PinNameToCase = 
-[InteractiveDebug]
-tbvLocalWatchArrayLimit = 50
-Watch_0 = 150 80 80 0
-Watch_1 = 150 80 80 200
-Watch_2 = 150 80 80 200
-Watch_3 = 150 80 80 200
-Watch_4 = 150 80 80 200
-Watch_5 = 150 80 80 200
 [Language]
 EditWindow_Font = COURIER12
 Background = ID_WHITE
@@ -335,8 +327,6 @@ Wave_comment_string_font = -f COURIER12 -c ID_RED5
 HB_designTreeFont = *-adobe-courier-medium-r-*-*-12-*-*-*-*-*-iso8859-*
 Text_font = COURIER12
 nMemory_font = Fixed 14
-Wave_getsignal_form_font = -f COURIER12
-Text_annotFont = Helvetica_M_R_10
 [OtherEditor]
 cmd1 = "xterm -font 9x15 -fg black -bg gray -e"
 name = "vi"
@@ -383,10 +373,10 @@ savePropDtl = TRUE
 [QtDialog]
 Verdi_OpenFile = 884,291,590,340
 nEditorSaveFile = 665,367,590,340
+QwWarnMsgDlg = 650,390,600,250
+QwUserAskDlg = 798,472,324,130
 importDesignForm = 592,241,715,574
 CompileDesignUi = 1071,403,691,410
-QwWarnMsgDlg = 650,759,600,250
-QwUserAskDlg = 527,504,324,134
 [Relationship]
 hideRecursiceNode = FALSE
 [Safety]
@@ -398,11 +388,11 @@ ErrorObject = ID_GRAY5
 AnnotateSignal = TRUE
 HighlightSafetyObject = TRUE
 [Session Cache]
+2 = string (session file name)
 3 = string (session file name)
 4 = string (session file name)
 5 = string (session file name)
-1 = /home/jy5187/Documents/adv_proj/hwpq/verdiLog/novas_autosave.ses
-2 = /home/jy5187/verdiLog/novas_autosave.ses
+1 = /home/jy5187/verdiLog/novas_autosave.ses
 [Simulation]
 scsPath = scsim
 scsOption = 
@@ -428,15 +418,13 @@ vcs_mixPath = simv
 vcs_mixOption = -vhdlrun "-vhpi debussy:FSDBDumpCmd"
 scs_mixPath = scsim
 scs_mixOption = -vhpi debussy:FSDBDumpCmd
+interactiveDebugging = {True, False}
+KeepBreakPoints = False
 ScsDebugAll = False
 simType = {vcssv, xl, nc, vcs, mti, mti_vlog, vhnc, scs, mixnc}
 thirdpartyIdx = -1
 iscCmdSep = FALSE
 NoAppendOption = False
-bSVTBMode = TRUE
-SimMode = TRUE
-interactiveDebugging = TRUE
-KeepBreakPoints = FALSE
 [SimulationPlus]
 xlPath = verilog
 xlOption = 
@@ -460,22 +448,18 @@ vcs_mixPath = simv
 vcs_mixOption = -vhdlrun "-vhpi debussy:FSDBDumpCmd"
 scs_mixPath = scsim
 scs_mixOption = -vhpi debussy:FSDBDumpCmd
+vcs_svPath = simv
+vcs_svOption = 
+simType = vcssv
 thirdpartyIdx = -1
+interactiveDebugging = FALSE
+KeepBreakPoints = FALSE
 iscCmdSep = FALSE
 ScsDebugAll = FALSE
 NoAppendOption = FALSE
 invokeSimPath = work
-vcs_svOption = -sml=verdi
-simType = vcssv
-bSVTBMode = TRUE
-SimMode = TRUE
-interactiveDebugging = TRUE
-KeepBreakPoints = FALSE
-vcs_svPath = simv
-smartlog = TRUE
 [SimulationPlus2]
 eventDumpUnfinish = FALSE
-dumpPowerRoot = FALSE
 [Source]
 wordWrapOn = TRUE
 viewReuse = TRUE
@@ -505,9 +489,6 @@ ohSimType = VerilogXL
 nLineSize = 1024
 [Test]
 verbose_progress = FALSE
-[TestBenchBrowser]
--showUVMDynamicHierTreeWin = FALSE
-DataViewTooltip = TRUE
 [Text]
 hdlTypeName = blue4
 hdlLibrary = blue4
@@ -591,7 +572,7 @@ pdmlMacro = ID_BLACK
 font = COURIER12
 annotFont = Helvetica_M_R_10
 [Text.1]
-viewport = -101 92 1560 867 45
+viewport = -10 19 1920 945 45
 [TextPrinter]
 Orientation = Landscape
 Indicator = FALSE
@@ -674,56 +655,6 @@ Button2 = "Next 1000 Time" "#1000 $stop;.\n"
 Button1 = "Dump All Signals" "$fsdbDumpvars;\n"
 [VIA]
 viaLogViewerDefaultRuleOneSearchForm = "share/VIA/Apps/PredefinedRules/Misc/Onesearch_rule.rc"
-viaLogViewerDefaultRuleInterForm = "share/VIA/Apps/PredefinedRules/UVM_OVM_i_rule.rc"
-[VIA.interactiveDebug.preference]
-DefaultDisplayTimeUnit = "1.000000ns"
-DefaultLogTimeUnit = "1.000000ns"
-[VIA.interactiveDebug.preference.vgifColumnSettingRC]
-[VIA.interactiveDebug.preference.vgifColumnSettingRC.setting0]
-parRuleSets = "/eda/synopsys/verdi/U-2023.03-SP2-5/share/VIA/Apps/PredefinedParRules/par_rule_OVM.rc /eda/synopsys/verdi/U-2023.03-SP2-5/share/VIA/Apps/PredefinedParRules/par_rule_UVM.rc /eda/synopsys/verdi/U-2023.03-SP2-5/share/VIA/Apps/PredefinedParRules/par_rule_LP.r\
-c /eda/synopsys/verdi/U-2023.03-SP2-5/share/VIA/Apps/PredefinedParRules/par_rule_VCS.rc "
-[VIA.interactiveDebug.preference.vgifColumnSettingRC.setting0.column0]
-name = "Block's First Line"
-width = 120
-visualIndex = 1
-isHidden = TRUE
-isUserChangeColumnVisible = FALSE
-[VIA.interactiveDebug.preference.vgifColumnSettingRC.setting0.column1]
-name = "Message"
-width = 2000
-visualIndex = 6
-isHidden = FALSE
-isUserChangeColumnVisible = FALSE
-[VIA.interactiveDebug.preference.vgifColumnSettingRC.setting0.column2]
-name = "Time"
-width = 60
-visualIndex = 0
-isHidden = FALSE
-isUserChangeColumnVisible = FALSE
-[VIA.interactiveDebug.preference.vgifColumnSettingRC.setting0.column3]
-name = "Code"
-width = 60
-visualIndex = 4
-isHidden = TRUE
-isUserChangeColumnVisible = FALSE
-[VIA.interactiveDebug.preference.vgifColumnSettingRC.setting0.column4]
-name = "Type"
-width = 60
-visualIndex = 5
-isHidden = TRUE
-isUserChangeColumnVisible = FALSE
-[VIA.interactiveDebug.preference.vgifColumnSettingRC.setting0.column5]
-name = "Severity"
-width = 60
-visualIndex = 2
-isHidden = FALSE
-isUserChangeColumnVisible = FALSE
-[VIA.interactiveDebug.preference.vgifColumnSettingRC.setting0.column6]
-name = "Reporter"
-width = 60
-visualIndex = 3
-isHidden = FALSE
-isUserChangeColumnVisible = FALSE
 [VIA.oneSearch.preference]
 DefaultDisplayTimeUnit = "1.000000ns"
 DefaultLogTimeUnit = "1.000000ns"
@@ -738,27 +669,27 @@ visualIndex = 2
 isHidden = FALSE
 isUserChangeColumnVisible = FALSE
 [VIA.oneSearch.preference.vgifColumnSettingRC.setting0.column1]
+name = "Type"
+width = 60
+visualIndex = 4
+isHidden = TRUE
+isUserChangeColumnVisible = FALSE
+[VIA.oneSearch.preference.vgifColumnSettingRC.setting0.column2]
 name = "Message"
 width = 2000
 visualIndex = 5
 isHidden = FALSE
 isUserChangeColumnVisible = FALSE
-[VIA.oneSearch.preference.vgifColumnSettingRC.setting0.column2]
+[VIA.oneSearch.preference.vgifColumnSettingRC.setting0.column3]
 name = "Time"
 width = 60
 visualIndex = 0
 isHidden = FALSE
 isUserChangeColumnVisible = FALSE
-[VIA.oneSearch.preference.vgifColumnSettingRC.setting0.column3]
+[VIA.oneSearch.preference.vgifColumnSettingRC.setting0.column4]
 name = "Code"
 width = 60
 visualIndex = 3
-isHidden = TRUE
-isUserChangeColumnVisible = FALSE
-[VIA.oneSearch.preference.vgifColumnSettingRC.setting0.column4]
-name = "Type"
-width = 60
-visualIndex = 4
 isHidden = TRUE
 isUserChangeColumnVisible = FALSE
 [VIA.oneSearch.preference.vgifColumnSettingRC.setting0.column5]
@@ -767,8 +698,6 @@ width = 120
 visualIndex = 1
 isHidden = TRUE
 isUserChangeColumnVisible = FALSE
-[VIA.parRule]
-parRulePathInterForm = ""
 [Vi]
 ViFont = "Clean 14"
 ViBG = white
@@ -847,11 +776,7 @@ ShowDeltaTime = TRUE
 WaveExtendLastTick = TRUE
 displayMessageLabelOnly = TRUE
 AutoApplySeverityColor = TRUE
-scope_to_save_with_macro
-open_file_dir
-open_rc_file_dir
-getSignalForm = 0 0 800 479 100 30 100 30
-viewPort = 0 25 1399 543 445 726
+viewPort = 50 214 960 332 100 65
 legendBackground = -c ID_BLACK
 valueBackground = -c ID_BLACK
 curveBackground = -c ID_BLACK
@@ -991,6 +916,7 @@ displayDeltaY = FALSE
 signal_rc_abspath = TRUE
 signal_rc_no_natural_bus_range = FALSE
 save_scope_with_macro = FALSE
+scope_to_save_with_macro
 FitAnaByBusSize = FALSE
 DisplayVerticalZoomTools = FALSE
 DisplayIndicateBar = FALSE
@@ -1017,9 +943,9 @@ printBasic = 1 0 0 FALSE FALSE
 printDest = -printer {}
 printSignature = {%f %h %t} {}
 curveWindow_Drag&Drop_Mode = TRUE
-RecentFile1 = "\"/home/jy5187/Documents/adv_proj/hwpq/inter.fsdb\""
-RecentFile2 = "\"/home/jy5187/Documents/adv_proj/hwpq/inter.fsdb\""
 open_file_time_range = FALSE
+open_file_dir
+open_rc_file_dir
 legend_window_font = -f COURIER12 -c ID_CYAN5
 value_window_font = -f COURIER12 -c ID_CYAN5
 curve_window_font = -f COURIER12 -c ID_CYAN5
@@ -1119,7 +1045,6 @@ HvpMergeTool =
 ShowMergeMenuItem = FALSE
 fsmScoreMode = transition
 [eco]
-NameRule = 
 IsFreezeSilicon = FALSE
 cellQuantityManagement = FALSE
 ManageMode = INSTANCE_NAME
@@ -1127,6 +1052,7 @@ SpareCellsPinsManagement = TRUE
 LogCommitReport = FALSE
 InputPinStatus = 1
 OutputPinStatus = 2
+NameRule = 
 RevisedComponentColor = ID_BLUE5
 SpareCellColor = ID_RED5
 UserName = jy5187
@@ -1391,7 +1317,7 @@ AddImportArgument = FALSE
 LineBreakWithScope = TRUE
 StopAfterCompileOption = -s
 [wave.0]
-viewPort = 0 25 1399 543 445 726
+viewPort = 50 214 960 332 100 65
 [wave.1]
 viewPort = 127 219 960 332 100 65
 [wave.2]

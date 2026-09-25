@@ -21,5 +21,4 @@ package bram_tree_pkg;
     logic [ADDRESS_WIDTH-1:0] position;
     logic [ADDRESS_WIDTH-1:0] capacity;
   } bram_tree_curr_t;
-
 endpackage

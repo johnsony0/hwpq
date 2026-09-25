@@ -1,8 +1,10 @@
 `default_nettype none
+import bram_tree_pkg::*;
 
 module systolic_array_tb;
   // Parameters matching the module under test
   parameter int QUEUE_SIZE = SYSTOLIC_QUEUE_SIZE + BRAM_TREE_QUEUE_SIZE*TREE_COUNT;
+  parameter int THRESHOLD = 1000;
 
   // Clock and reset signals
   logic                  CLK;
@@ -27,6 +29,7 @@ module systolic_array_tb;
 
   // Test variables
   logic [DATA_WIDTH-1:0] random_value;
+  int timeout_counter = 0;
 
   typedef enum int {
     ENQUEUE = 1,
@@ -76,6 +79,7 @@ module systolic_array_tb;
     end
     
     // Test Case 1: Dequeue nodes
+    $display("DEBUG fill ref=%0d m=%0d h=%0d ob=%0d ib=%0d", ref_queue.size(), uut.m_empt, uut.h_empt, uut.OB[0], uut.IB[0]);
     // Dequeue nodes for QUEUE_SIZE times
     $display("\nTest Case 1: Dequeue Test");
     for (int i = 0; i < QUEUE_SIZE/2; i++) begin
@@ -105,7 +109,7 @@ module systolic_array_tb;
     // stress test, mix operations
     
     $display("\nTest Case 4: Stress Test");
-    for (int i = 0; i < 10000; i++) begin
+    for (int i = 0; i < 100000; i++) begin
       random_value = $urandom_range(1,3000);
       random_operation = $urandom_range(1,3);
       case (random_operation)
@@ -145,10 +149,16 @@ module systolic_array_tb;
         i_read = 0;
         i_data = value;
         ref_queue.push_back(value);
-        ref_queue.rsort();
+          ref_queue.rsort();
+        timeout_counter = 0;
       end else begin
         i_wrt  = 0;
         i_read = 0;
+        timeout_counter += 1;
+        if (timeout_counter >= THRESHOLD) begin
+          $error("ERROR: TIMEOUT");
+          $finish;
+        end
       end
       @(posedge CLK);
     end
@@ -163,11 +173,18 @@ module systolic_array_tb;
           $error("Dequeue: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data);
         i_wrt  = 0;
         i_read = 1;
-        ref_queue.rsort();
+          ref_queue.rsort();
         ref_queue.pop_front();
+        timeout_counter = 0;
       end else begin
         i_wrt  = 0;
         i_read = 0;
+          timeout_counter += 1;
+          if (timeout_counter >= THRESHOLD) begin
+          $display("DEBUG dequeue ref=%0d rd=%0d min=%0d valid=%0d m=%0d h=%0d ob=%0d ib=%0d hob=%0d hib=%0d empty=%b output0=%0d", ref_queue.size(), o_read_ready, uut.min_node, uut.min_valid, uut.m_empt, uut.h_empt, uut.OB[0], uut.IB[0], uut.heap_OB[0], uut.heap_IB[0], uut.heap_empty, uut.heap_output[0]);
+          $error("ERROR: TIMEOUT");
+          $finish;
+        end
       end
       @(posedge CLK);
     end
@@ -186,9 +203,15 @@ module systolic_array_tb;
         ref_queue.pop_front();
         ref_queue.push_back(value);
         ref_queue.rsort();
+        timeout_counter = 0;
       end else begin
         i_wrt  = 0;
         i_read = 0;
+        timeout_counter += 1;
+        if (timeout_counter >= THRESHOLD) begin
+          $error("ERROR: TIMEOUT");
+          $finish;
+        end
       end
       @(posedge CLK);
     end
