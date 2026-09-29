@@ -155,7 +155,7 @@ module systolic_array #(
       for (int i = 0; i < HALF_SIZE; i++) begin  // Iterate through each element
         priority case (1'b1)
         // if we are inserting into the front of OB, we do not do the shift anymore
-          OB_shift[i] && OB_shift_valid[i]
+          (i < HALF_SIZE-1) && OB_shift[i] && OB_shift_valid[i]
           && !(i > 0 && IB_zero_to_OB_one && (OB_shift_valid[0] && OB_shift[0]) && !(i_wrt && !i_read && !full && (i_data > OB[1])))
           && !(i_wrt && !i_read && !full && (i_data > OB[1])): begin
             OB[i] <= OB[i+1]; 
@@ -167,7 +167,7 @@ module systolic_array #(
         endcase
 
         priority case (1'b1)
-          IB_shift[i] && IB_shift_valid[i] &&
+          (i < HALF_SIZE-1) && IB_shift[i] && IB_shift_valid[i] &&
           !(IB_zero_to_OB_one && (OB_shift_valid[0] && OB_shift[0])) &&
           !(!dequeue_pending && OB_shift[i] && OB_shift_valid[i] && (i < HALF_SIZE - 1) && i_wrt && !i_read && !full && o_write_ready && IB_greater_than_OB_next[i+1])
           : begin
@@ -179,7 +179,7 @@ module systolic_array #(
             || (i == 0 && i_wrt && i_read && (i_data > OB[1]) && !IB_greater_than_OB_next[0])
             || (i > 0 && !IB_shift[i-1] && !IB_greater_than_OB_next[i-1])
             || (i == 0 && i_wrt && !full && o_write_ready && OB_shift[0] && OB_shift_valid[0] && (i_data > OB[1])))
-            && !(IB_zero_to_OB_one && (OB_shift_valid[0] && OB_shift[0]) && IB_greater_than_OB_next[i-1]))
+            && !(i>0 && IB_zero_to_OB_one && (OB_shift_valid[0] && OB_shift[0]) && IB_greater_than_OB_next[i-1]))
             IB[i] <= MIN_VALUE;
           end
           default: begin
@@ -188,7 +188,7 @@ module systolic_array #(
         endcase
 
         priority case (1'b1)
-          OB_next_greater_than_OB[i] && !OB_shift_valid[i] && !IB_greater_than_OB[i]
+          (i < HALF_SIZE-1) && OB_next_greater_than_OB[i] && !OB_shift_valid[i] && !IB_greater_than_OB[i]
           && (i > 0 && !IB_greater_than_OB_next[i-1]): begin
             // If we cannot shift, we can swap
             OB[i+1] <= OB[i];
@@ -196,12 +196,12 @@ module systolic_array #(
           end
 
           // if we are inserting to the front of OB we want to prevent any IB->OB shifts
-          IB_shift_to_OB[i] 
+          (i < HALF_SIZE-1) && IB_shift_to_OB[i] 
           && !(IB_zero_to_OB_one && (OB_shift_valid[0] && OB_shift[0]))
           && !(i_wrt && !i_read && !full && (i_data > OB[1])): begin
             // if OB is shifting while we want to swap in, we can just swap down instead
             OB[i] <= IB[i];
-            if (!(IB_shift[i-1] && IB_shift_valid[i-1])) IB[i] <= MIN_VALUE;
+            if (i > 0 && !(IB_shift[i-1] && IB_shift_valid[i-1])) IB[i] <= MIN_VALUE;
           end
 
           IB_greater_than_OB[i] && !(i < (HALF_SIZE-1) && OB_shift[i] && OB_shift_valid[i]): begin
@@ -209,8 +209,9 @@ module systolic_array #(
             OB[i] <=  IB[i];
           end
 
-          IB_greater_than_OB_next[i] && (!IB_greater_than_OB[i+1])
-          && ((IB[i+1] == 0) || (IB_greater_than_OB_next[i+1]) || (IB_shift[i+1]))
+          (i < HALF_SIZE-1) &&  IB_greater_than_OB_next[i] && (!IB_greater_than_OB[i+1])
+          && ((IB[i+1] == 0) || (i+1 < HALF_SIZE-1 && IB_greater_than_OB_next[i+1]) 
+          || (i+1 < HALF_SIZE-1 &&IB_shift[i+1]))
           && (IB_shift_valid[i] || IB_shift_valid[i+1])
           && !(IB_zero_to_OB_one && (OB_shift_valid[0] && OB_shift[0])): begin
             // Move IB[i] to OB[i+1], and move OB[i+1] to IB[i+1]
@@ -232,18 +233,18 @@ module systolic_array #(
             if (i == 0 && i_wrt && i_read && o_read_ready && (i_data > OB[1]) && (i_data > IB[1]) && (i_data > IB[0])) begin
               IB[i] <= MIN_VALUE;
             end
-            if (IB_shift[i-1] && IB_shift_valid[i-1] && (i > 0) && (IB[i-1] == MIN_VALUE) && !(IB_greater_than_OB[i-1]) && !(IB_greater_than_OB_next[i-1])) begin
+            if ((i > 0) && (IB_shift[i-1] && IB_shift_valid[i-1] && (i > 0) && (IB[i-1] == MIN_VALUE) && !(IB_greater_than_OB[i-1]) && !(IB_greater_than_OB_next[i-1]))) begin
               IB[i] <= MIN_VALUE;
             end
           end
 
-          IB_greater_than_OB_next[i] && !IB_shift_valid[i] && !IB_greater_than_OB[i+1]: begin
+          (i < HALF_SIZE-1) && IB_greater_than_OB_next[i] && !IB_shift_valid[i] && !IB_greater_than_OB[i+1]: begin
             // If we cannot shift, we can swap
             IB[i] <= OB[i+1];
             OB[i+1] <= IB[i];
           end
 
-          IB_greater_than_IB_next[i] && !IB_shift_valid[i]
+          (i < HALF_SIZE-1) && IB_greater_than_IB_next[i] && !IB_shift_valid[i]
           && ((i == (HALF_SIZE - 2)) || (!IB_greater_than_IB_next[i+1] && !IB_greater_than_OB_next[i+1]))
           && (!IB_greater_than_OB[i+1]): begin
             // If we cannot shift, we can swap
