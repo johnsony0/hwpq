@@ -85,7 +85,9 @@ module systolic_array #(
   assign full  = (size >= QUEUE_SIZE - 2);
   assign empty = (size <= 0);
   wire enq_ok  = i_wrt && !i_read && !full && o_write_ready;
-  wire enq_fwd = enq_ok && (i_data > OB[1]);
+  // Not gated on the readies: that would put the IB_room chain in series with the sort
+  // network. A refused forward only holds the OB shift for a cycle; the writes stay gated.
+  wire enq_fwd = i_wrt && !i_read && !full && (i_data > OB[1]);
   // A write is accepted this cycle. The sorting network must not act on a refused
   // write (inject i_data into IB[0], suppress its clear); gates mirror the datapath.
   wire writing_ib0 = enq_ok || (i_wrt && i_read && (o_read_ready || empty));
