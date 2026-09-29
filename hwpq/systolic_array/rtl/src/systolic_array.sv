@@ -23,6 +23,10 @@
            o_data - Node data output (highest priority element)
   Constraints: Two of QUEUE_SIZE elements are held back as
                shift-chain margin, so the array holds QUEUE_SIZE-2.
+               Both readies drop, for at most two cycles, while IB[0] cannot
+               vacate. o_read_ready alone drops for the cycle after an accepted
+               read or replace that leaves the queue non-empty; a write is
+               still accepted there.
 *******************************************************************************/
 
 `default_nettype none
