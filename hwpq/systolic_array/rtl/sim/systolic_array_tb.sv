@@ -115,6 +115,22 @@ module systolic_array_tb;
   endgenerate
 `endif
 
+  // Each element occupies one nonzero IB/OB slot, so the occupied count tracks size.
+  // Reports each change in the mismatch once: a loss drops the count, a duplicate raises it.
+  int drift = 0;
+  always @(negedge CLK) if (RSTn) begin : occupancy
+    int occupied;
+    occupied = 0;
+    for (int i = 0; i < QUEUE_SIZE/2; i++)
+      occupied += (u_SystolicArray.IB[i] != '0) + (u_SystolicArray.OB[i] != '0);
+    if (occupied - u_SystolicArray.size != drift) begin
+      error_count++;
+      $error("[Occupancy] Time %0t: %0d nonzero IB/OB slots, size is %0d",
+             $time, occupied, u_SystolicArray.size);
+      drift = occupied - u_SystolicArray.size;
+    end
+  end
+
   initial begin
     // Open log file for recording writes
     write_log_file = $fopen("build/systolic_writes.txt", "w");
