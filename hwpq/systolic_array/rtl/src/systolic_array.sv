@@ -69,6 +69,7 @@ module systolic_array #(
   logic                    OB_shift_valid         [HALF_SIZE-1];
 
   logic                    IB_shift_to_OB         [HALF_SIZE-1];
+  logic                    IB_room                [HALF_SIZE-1];
    logic                   IB_zero_to_OB_one;
 
   logic                      dequeue_pending;
@@ -90,8 +91,10 @@ module systolic_array #(
   wire writing_ib0 = enq_ok || (i_wrt && i_read && (o_read_ready || empty));
   // Derived from `full` so the two thresholds cannot drift apart. Gating on a head
   // bubble is wrong here: the head need not refill on its own, and both readies wedge.
-  assign o_write_ready = !full;
-  assign o_read_ready = !empty && (o_data != MIN_VALUE) && !dequeue_pending;
+  // IB[0] can take a write this cycle. Both readies drop without it: replace writes IB[0] too.
+  wire ib0_free = (IB[0] == MIN_VALUE) || IB_room[0];
+  assign o_write_ready = !full && ib0_free;
+  assign o_read_ready = !empty && (o_data != MIN_VALUE) && !dequeue_pending && ib0_free;
 
   // Sequential logic
   always_ff @(posedge i_CLK or negedge i_RSTn) begin
@@ -326,6 +329,19 @@ module systolic_array #(
       size_next = size;
     end
 
+  end
+
+  // IB_shift_valid without its input-dependent head-forward term, so the readies depend on
+  // state only. An IB->OB move counts only while OB[0] shifts, where a forwarded write
+  // lands in OB[0]; elsewhere IB_room never exceeds IB_shift_valid.
+  always_comb begin
+    IB_room[HALF_SIZE-2] = IB[HALF_SIZE-1] == MIN_VALUE;
+    for (int i=HALF_SIZE-3; i >= 0; i--) begin
+      IB_room[i] = (IB[i+1] == 0 || IB_room[i+1]
+                    || (IB_greater_than_OB_next[i+1] && OB_shift[i] && OB_shift_valid[i]
+                        && OB_shift[0] && OB_shift_valid[0]))
+      && !((IB_greater_than_OB[i+1] || IB_greater_than_OB[i]) && !(OB_shift[i] && OB_shift_valid[i]));
+    end
   end
 
 endmodule
