@@ -181,7 +181,7 @@ module systolic_array #(
         priority case (1'b1)
           (i < HALF_SIZE-1) && IB_shift[i] && IB_shift_valid[i] &&
           !(IB_zero_to_OB_one && (OB_shift_valid[0] && OB_shift[0])) &&
-          !(!dequeue_pending && OB_shift[i] && OB_shift_valid[i] && (i < HALF_SIZE - 1) && enq_ok && IB_greater_than_OB_next[i+1])
+          !(!dequeue_pending && OB_shift[i] && OB_shift_valid[i] && (i < HALF_SIZE - 2) && enq_ok && IB_greater_than_OB_next[i+1])
           : begin
             // We slide this value down
             // if we are pausing OB, and IB 
@@ -224,7 +224,7 @@ module systolic_array #(
           (i < HALF_SIZE-1) &&  IB_greater_than_OB_next[i] && (!IB_greater_than_OB[i+1])
           && ((IB[i+1] == 0) || (i+1 < HALF_SIZE-1 && IB_greater_than_OB_next[i+1]) 
           || (i+1 < HALF_SIZE-1 &&IB_shift[i+1]))
-          && (IB_shift_valid[i] || IB_shift_valid[i+1])
+          && (IB_shift_valid[i] || (i+1 < HALF_SIZE-1 && IB_shift_valid[i+1]))
           && !(IB_zero_to_OB_one && (OB_shift_valid[0] && OB_shift[0])): begin
             // Move IB[i] to OB[i+1], and move OB[i+1] to IB[i+1]
             OB[i+1] <= IB[i];
