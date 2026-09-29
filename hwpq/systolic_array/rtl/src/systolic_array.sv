@@ -289,7 +289,9 @@ module systolic_array #(
       IB_greater_than_OB_next[i] = IB[i] > OB[i+1];
       IB_greater_than_IB_next[i] = IB[i] > IB[i+1];
       OB_next_greater_than_OB[i] = OB[i+1] > OB[i];
-      IB_shift_to_OB[i] = IB_greater_than_OB_next[i] && (i > 0 && OB_shift[i-1] && OB_shift_valid[i-1]);
+      // Mirror the head-forward suppression of the IB->OB move: IB_shift_valid relies on it.
+      IB_shift_to_OB[i] = IB_greater_than_OB_next[i] && (i > 0 && OB_shift[i-1] && OB_shift_valid[i-1])
+                          && !(i_wrt && !i_read && !full && (i_data > OB[1]));
     end
 
     for (int i=HALF_SIZE-2; i >= 0; i--) begin
