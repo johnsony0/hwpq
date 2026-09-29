@@ -21,6 +21,8 @@
   Outputs: o_write_ready - High when the queue has room to accept a write
            o_read_ready - High when the queue holds data available to read
            o_data - Node data output (highest priority element)
+  Constraints: Two of QUEUE_SIZE elements are held back as
+               shift-chain margin, so the array holds QUEUE_SIZE-2.
 *******************************************************************************/
 
 `default_nettype none
@@ -41,7 +43,7 @@ module systolic_array #(
 
     // Output
     output var logic [DATA_WIDTH-1:0] o_data,    // Node data output
-    output var logic                  o_write_ready, // High if systolic is full
+    output var logic                  o_write_ready, // High if the array can accept a write
     output var logic                  o_read_ready
 
 );
@@ -81,9 +83,12 @@ module systolic_array #(
 
   assign full  = (size >= QUEUE_SIZE - 2);
   assign empty = (size <= 0);
-
-  // we need 2 empty spaces for the systolic to work, and we cannot write/read right after a read
-  assign o_write_ready = !(size >= (QUEUE_SIZE - 3)); 
+  // A write is accepted this cycle. The sorting network must not act on a refused
+  // write (inject i_data into IB[0], suppress its clear); gates mirror the datapath.
+  wire writing_ib0 = (i_wrt && !i_read && !full && o_write_ready) || (i_wrt && i_read && (o_read_ready || empty));
+  // Derived from `full` so the two thresholds cannot drift apart. Gating on a head
+  // bubble is wrong here: the head need not refill on its own, and both readies wedge.
+  assign o_write_ready = !full;
   assign o_read_ready = !empty && (o_data != MIN_VALUE) && !dequeue_pending;
 
   // Sequential logic
@@ -123,7 +128,7 @@ module systolic_array #(
       end
 
       // Replace operation
-      if (i_wrt && i_read && o_read_ready) begin
+      if (i_wrt && i_read && (o_read_ready || empty)) begin
         if (empty) begin
           OB[0] <= i_data;  // insert the new node at the head of OB
         end else begin
@@ -141,12 +146,12 @@ module systolic_array #(
       size <= size_next;
 
       // forecasting next value
-      dequeue_pending <= i_read && !empty;
+      dequeue_pending <= i_read && o_read_ready;
       next_ob_forecast <= (IB[0] < OB[1]) ? OB[1] : IB[0];
 
       if (IB_zero_to_OB_one && (OB_shift_valid[0] && OB_shift[0]) && !(i_wrt && !i_read && !full && (i_data > OB[1]))) begin
         OB[1] <= IB[0];
-        if (!i_wrt || (i_wrt && i_read && (i_data > OB[1]) && !IB_greater_than_OB_next[0]) || (i_wrt && !full && o_write_ready && OB_shift[0] && OB_shift_valid[0] && (i_data > OB[1]))) begin
+        if (!writing_ib0 || (writing_ib0 && i_read && (i_data > OB[1]) && !IB_greater_than_OB_next[0]) || (writing_ib0 && !full && o_write_ready && OB_shift[0] && OB_shift_valid[0] && (i_data > OB[1]))) begin
           IB[0] <= 0;
         end
       end
@@ -174,11 +179,11 @@ module systolic_array #(
             // We slide this value down
             // if we are pausing OB, and IB 
             IB[i+1] <= IB[i];
-            if (((i == 0 && !i_wrt) 
+            if (((i == 0 && !writing_ib0) 
             || (i > 0 && (!IB_shift_valid[i-1] || (IB_shift_to_OB[i-1] && !(i_wrt && !i_read && !full && (i_data > OB[1]))))) 
-            || (i == 0 && i_wrt && i_read && (i_data > OB[1]) && !IB_greater_than_OB_next[0])
+            || (i == 0 && writing_ib0 && i_read && (i_data > OB[1]) && !IB_greater_than_OB_next[0])
             || (i > 0 && !IB_shift[i-1] && !IB_greater_than_OB_next[i-1])
-            || (i == 0 && i_wrt && !full && o_write_ready && OB_shift[0] && OB_shift_valid[0] && (i_data > OB[1])))
+            || (i == 0 && writing_ib0 && !full && o_write_ready && OB_shift[0] && OB_shift_valid[0] && (i_data > OB[1])))
             && !(i>0 && IB_zero_to_OB_one && (OB_shift_valid[0] && OB_shift[0]) && IB_greater_than_OB_next[i-1]))
             IB[i] <= MIN_VALUE;
           end
@@ -219,7 +224,7 @@ module systolic_array #(
             IB[i+1] <= OB[i+1];
             // if we are also writing this cycle, we need to replace the value with i_data or OB[0] is i_data > OB[0]
             // unless the value we are replacing with is being forwarded to OB[0]...
-            if (i == 0 && i_wrt) begin
+            if (i == 0 && writing_ib0) begin
               if (i_data > OB[0] && !i_read) begin
                 IB[i] <= OB[0];
               end else begin
@@ -227,7 +232,7 @@ module systolic_array #(
               end
             end
             if ((i > 0 && (IB_shift_to_OB[i-1] && !(i_wrt && !i_read && !full && (i_data > OB[1])) 
-            || (IB_greater_than_OB[i-1] && (i-1 != 0)))) || (i == 0 && !i_wrt)) begin
+            || (IB_greater_than_OB[i-1] && (i-1 != 0)))) || (i == 0 && !writing_ib0)) begin
               IB[i] <= MIN_VALUE;
             end
             if (i == 0 && i_wrt && i_read && o_read_ready && (i_data > OB[1]) && (i_data > IB[1]) && (i_data > IB[0])) begin
@@ -305,7 +310,7 @@ module systolic_array #(
     // compute size_next
     if (i_wrt && !i_read && !full) begin
       size_next = size + 1;
-    end else if (!i_wrt && i_read && !empty) begin
+    end else if (!i_wrt && i_read && o_read_ready) begin
       size_next = size - 1;
     end else if (i_wrt && i_read && !full && !empty) begin
       size_next = size;
