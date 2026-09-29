@@ -83,11 +83,11 @@ module systolic_array #(
 
   assign full  = (size >= QUEUE_SIZE - 2);
   assign empty = (size <= 0);
-  wire enq_ok  = i_wrt && !i_read && !full;
+  wire enq_ok  = i_wrt && !i_read && !full && o_write_ready;
   wire enq_fwd = enq_ok && (i_data > OB[1]);
   // A write is accepted this cycle. The sorting network must not act on a refused
   // write (inject i_data into IB[0], suppress its clear); gates mirror the datapath.
-  wire writing_ib0 = (enq_ok && o_write_ready) || (i_wrt && i_read && (o_read_ready || empty));
+  wire writing_ib0 = enq_ok || (i_wrt && i_read && (o_read_ready || empty));
   // Derived from `full` so the two thresholds cannot drift apart. Gating on a head
   // bubble is wrong here: the head need not refill on its own, and both readies wedge.
   assign o_write_ready = !full;
@@ -111,7 +111,7 @@ module systolic_array #(
       end
 
       // Enqueue operation
-      if (enq_ok && o_write_ready) begin
+      if (enq_ok) begin
         // shifting OB, so we check i_data with OB[1] instead
         if (OB_shift[0] && OB_shift_valid[0]) begin
           if (i_data > OB[1]) begin
@@ -176,7 +176,7 @@ module systolic_array #(
         priority case (1'b1)
           (i < HALF_SIZE-1) && IB_shift[i] && IB_shift_valid[i] &&
           !(IB_zero_to_OB_one && (OB_shift_valid[0] && OB_shift[0])) &&
-          !(!dequeue_pending && OB_shift[i] && OB_shift_valid[i] && (i < HALF_SIZE - 1) && enq_ok && o_write_ready && IB_greater_than_OB_next[i+1])
+          !(!dequeue_pending && OB_shift[i] && OB_shift_valid[i] && (i < HALF_SIZE - 1) && enq_ok && IB_greater_than_OB_next[i+1])
           : begin
             // We slide this value down
             // if we are pausing OB, and IB 
