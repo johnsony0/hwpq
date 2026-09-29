@@ -83,9 +83,11 @@ module systolic_array #(
 
   assign full  = (size >= QUEUE_SIZE - 2);
   assign empty = (size <= 0);
+  wire enq_ok  = i_wrt && !i_read && !full;
+  wire enq_fwd = enq_ok && (i_data > OB[1]);
   // A write is accepted this cycle. The sorting network must not act on a refused
   // write (inject i_data into IB[0], suppress its clear); gates mirror the datapath.
-  wire writing_ib0 = (i_wrt && !i_read && !full && o_write_ready) || (i_wrt && i_read && (o_read_ready || empty));
+  wire writing_ib0 = (enq_ok && o_write_ready) || (i_wrt && i_read && (o_read_ready || empty));
   // Derived from `full` so the two thresholds cannot drift apart. Gating on a head
   // bubble is wrong here: the head need not refill on its own, and both readies wedge.
   assign o_write_ready = !full;
@@ -109,7 +111,7 @@ module systolic_array #(
       end
 
       // Enqueue operation
-      if (i_wrt && !i_read && !full && o_write_ready) begin
+      if (enq_ok && o_write_ready) begin
         // shifting OB, so we check i_data with OB[1] instead
         if (OB_shift[0] && OB_shift_valid[0]) begin
           if (i_data > OB[1]) begin
@@ -149,7 +151,7 @@ module systolic_array #(
       dequeue_pending <= i_read && o_read_ready;
       next_ob_forecast <= (IB[0] < OB[1]) ? OB[1] : IB[0];
 
-      if (IB_zero_to_OB_one && (OB_shift_valid[0] && OB_shift[0]) && !(i_wrt && !i_read && !full && (i_data > OB[1]))) begin
+      if (IB_zero_to_OB_one && (OB_shift_valid[0] && OB_shift[0]) && !enq_fwd) begin
         OB[1] <= IB[0];
         if (!writing_ib0 || (writing_ib0 && i_read && (i_data > OB[1]) && !IB_greater_than_OB_next[0]) || (writing_ib0 && !full && o_write_ready && OB_shift[0] && OB_shift_valid[0] && (i_data > OB[1]))) begin
           IB[0] <= 0;
@@ -161,8 +163,8 @@ module systolic_array #(
         priority case (1'b1)
         // if we are inserting into the front of OB, we do not do the shift anymore
           (i < HALF_SIZE-1) && OB_shift[i] && OB_shift_valid[i]
-          && !(i > 0 && IB_zero_to_OB_one && (OB_shift_valid[0] && OB_shift[0]) && !(i_wrt && !i_read && !full && (i_data > OB[1])))
-          && !(i_wrt && !i_read && !full && (i_data > OB[1])): begin
+          && !(i > 0 && IB_zero_to_OB_one && (OB_shift_valid[0] && OB_shift[0]) && !enq_fwd)
+          && !enq_fwd: begin
             OB[i] <= OB[i+1]; 
             if (!(i == 0 && IB_zero_to_OB_one && (OB_shift_valid[0] && OB_shift[0])) && (i == (HALF_SIZE - 2) || !OB_shift_valid[i+1] || !IB_shift_to_OB[i+1] || !OB_shift[i+1] || (OB[i+2] == 0))) OB[i+1] <= MIN_VALUE;
           end
@@ -174,13 +176,13 @@ module systolic_array #(
         priority case (1'b1)
           (i < HALF_SIZE-1) && IB_shift[i] && IB_shift_valid[i] &&
           !(IB_zero_to_OB_one && (OB_shift_valid[0] && OB_shift[0])) &&
-          !(!dequeue_pending && OB_shift[i] && OB_shift_valid[i] && (i < HALF_SIZE - 1) && i_wrt && !i_read && !full && o_write_ready && IB_greater_than_OB_next[i+1])
+          !(!dequeue_pending && OB_shift[i] && OB_shift_valid[i] && (i < HALF_SIZE - 1) && enq_ok && o_write_ready && IB_greater_than_OB_next[i+1])
           : begin
             // We slide this value down
             // if we are pausing OB, and IB 
             IB[i+1] <= IB[i];
             if (((i == 0 && !writing_ib0) 
-            || (i > 0 && (!IB_shift_valid[i-1] || (IB_shift_to_OB[i-1] && !(i_wrt && !i_read && !full && (i_data > OB[1]))))) 
+            || (i > 0 && (!IB_shift_valid[i-1] || (IB_shift_to_OB[i-1] && !enq_fwd))) 
             || (i == 0 && writing_ib0 && i_read && (i_data > OB[1]) && !IB_greater_than_OB_next[0])
             || (i > 0 && !IB_shift[i-1] && !IB_greater_than_OB_next[i-1])
             || (i == 0 && writing_ib0 && !full && o_write_ready && OB_shift[0] && OB_shift_valid[0] && (i_data > OB[1])))
@@ -203,14 +205,14 @@ module systolic_array #(
           // if we are inserting to the front of OB we want to prevent any IB->OB shifts
           (i < HALF_SIZE-1) && IB_shift_to_OB[i] 
           && !(IB_zero_to_OB_one && (OB_shift_valid[0] && OB_shift[0]))
-          && !(i_wrt && !i_read && !full && (i_data > OB[1])): begin
+          && !enq_fwd: begin
             // if OB is shifting while we want to swap in, we can just swap down instead
             OB[i] <= IB[i];
             if (i > 0 && !(IB_shift[i-1] && IB_shift_valid[i-1])) IB[i] <= MIN_VALUE;
           end
 
           IB_greater_than_OB[i] && !(i < (HALF_SIZE-1) && OB_shift[i] && OB_shift_valid[i]): begin
-            if (!(i_wrt && !i_read && !full && (i_data < OB[0]) && (i == 0))) IB[i] <=  OB[i];
+            if (!(enq_ok && (i_data < OB[0]) && (i == 0))) IB[i] <=  OB[i];
             OB[i] <=  IB[i];
           end
 
@@ -231,7 +233,7 @@ module systolic_array #(
                 IB[i] <= i_data;
               end
             end
-            if ((i > 0 && (IB_shift_to_OB[i-1] && !(i_wrt && !i_read && !full && (i_data > OB[1])) 
+            if ((i > 0 && (IB_shift_to_OB[i-1] && !enq_fwd 
             || (IB_greater_than_OB[i-1] && (i-1 != 0)))) || (i == 0 && !writing_ib0)) begin
               IB[i] <= MIN_VALUE;
             end
@@ -291,7 +293,7 @@ module systolic_array #(
       OB_next_greater_than_OB[i] = OB[i+1] > OB[i];
       // Mirror the head-forward suppression of the IB->OB move: IB_shift_valid relies on it.
       IB_shift_to_OB[i] = IB_greater_than_OB_next[i] && (i > 0 && OB_shift[i-1] && OB_shift_valid[i-1])
-                          && !(i_wrt && !i_read && !full && (i_data > OB[1]));
+                          && !enq_fwd;
     end
 
     for (int i=HALF_SIZE-2; i >= 0; i--) begin
@@ -310,7 +312,7 @@ module systolic_array #(
     end
 
     // compute size_next
-    if (i_wrt && !i_read && !full) begin
+    if (enq_ok) begin
       size_next = size + 1;
     end else if (!i_wrt && i_read && o_read_ready) begin
       size_next = size - 1;
