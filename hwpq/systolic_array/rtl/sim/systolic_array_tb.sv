@@ -100,8 +100,7 @@ module systolic_array_tb;
           (g_i < u_SystolicArray.HALF_SIZE-1 && u_SystolicArray.IB[g_i+1] == $past(u_SystolicArray.IB[g_i])) ||
           (u_SystolicArray.OB[g_i] == $past(u_SystolicArray.IB[g_i])) ||
           (g_i < u_SystolicArray.HALF_SIZE-1 && u_SystolicArray.OB[g_i+1] == $past(u_SystolicArray.IB[g_i])) ||
-          (g_i > 0 && u_SystolicArray.IB[g_i-1] == $past(u_SystolicArray.IB[g_i])) ||
-          (g_i == 0 && o_data == $past(u_SystolicArray.IB[0]))
+          (g_i > 0 && u_SystolicArray.IB[g_i-1] == $past(u_SystolicArray.IB[g_i]))
         );
       endproperty
 
