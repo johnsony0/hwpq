@@ -26,6 +26,7 @@ module systolic_array_tb;
   int write_stall_cycles;
   int read_stall_cycles;
   int stall_timeout      = 2000;
+  int error_count        = 0;
 
   // File descriptor for write logging
   int write_log_file;
@@ -86,34 +87,54 @@ module systolic_array_tb;
     end
   end
 
+`ifndef __ICARUS__
+  // Each live IB value is next seen in IB or OB at an adjacent index. iverilog lacks SVA.
   genvar g_i;
   generate
     // Loop up to HALF_SIZE (u_SystolicArray.HALF_SIZE), not QUEUE_SIZE
     for (g_i = 0; g_i < u_SystolicArray.HALF_SIZE; g_i++) begin : g_data_conservation_check
       property p_value_preserved;
         @(posedge CLK) disable iff (!RSTn)
-        // Check that IB[g_i] moves to valid locations in IB or OB, or stays put
         (u_SystolicArray.IB[g_i] != '0) |=> (
           (u_SystolicArray.IB[g_i] == $past(u_SystolicArray.IB[g_i])) ||
           (g_i < u_SystolicArray.HALF_SIZE-1 && u_SystolicArray.IB[g_i+1] == $past(u_SystolicArray.IB[g_i])) ||
           (u_SystolicArray.OB[g_i] == $past(u_SystolicArray.IB[g_i])) ||
           (g_i < u_SystolicArray.HALF_SIZE-1 && u_SystolicArray.OB[g_i+1] == $past(u_SystolicArray.IB[g_i])) ||
-          (g_i > 0 && u_SystolicArray.IB[g_i-1] == $past(u_SystolicArray.IB[g_i])) ||
-          (g_i == 0 && o_data == $past(u_SystolicArray.IB[0]))
+          (g_i > 0 && u_SystolicArray.IB[g_i-1] == $past(u_SystolicArray.IB[g_i]))
         );
       endproperty
 
       a_value_preserved: assert property (p_value_preserved)
-        else $error("[Data Lost] Time %0t: Value %0d at IB index %0d disappeared!", 
-                    $time, $past(u_SystolicArray.IB[g_i]), g_i);
+        else begin
+          error_count++;
+          $error("[Data Lost] Time %0t: Value %0d at IB index %0d disappeared!",
+                 $time, $past(u_SystolicArray.IB[g_i]), g_i);
+        end
     end
   endgenerate
+`endif
+
+  // Each element occupies one nonzero IB/OB slot, so the occupied count tracks size.
+  // Reports each change in the mismatch once: a loss drops the count, a duplicate raises it.
+  int drift = 0;
+  always @(negedge CLK) if (RSTn) begin : occupancy
+    int occupied;
+    occupied = 0;
+    for (int i = 0; i < QUEUE_SIZE/2; i++)
+      occupied += (u_SystolicArray.IB[i] != '0) + (u_SystolicArray.OB[i] != '0);
+    if (occupied - u_SystolicArray.size != drift) begin
+      error_count++;
+      $error("[Occupancy] Time %0t: %0d nonzero IB/OB slots, size is %0d",
+             $time, occupied, u_SystolicArray.size);
+      drift = occupied - u_SystolicArray.size;
+    end
+  end
 
   initial begin
     // Open log file for recording writes
-    write_log_file = $fopen("a-star-accelerator/logs/systolic_writes.txt", "w");
+    write_log_file = $fopen("build/systolic_writes.txt", "w");
     if (write_log_file == 0) begin
-      $fatal(1, "Failed to open file: a-star-accelerator/logs/systolic_writes.txt");
+      $fatal(1, "Failed to open file: build/systolic_writes.txt");
     end
 
     // Initialize signals
@@ -162,7 +183,7 @@ module systolic_array_tb;
     $display("\nTest Case 4: Stress Test");
     for (int i = 0; i < 100000; i++) begin
       random_value = $urandom_range(1, 1024);
-      random_operation = $urandom_range(1,3);
+      random_operation = t_operation'($urandom_range(1,3));
       case (random_operation)
         ENQUEUE: begin
           enqueue(random_value);
@@ -189,12 +210,14 @@ module systolic_array_tb;
     $display("=====================================================");
 
     $fclose(write_log_file);
+    if (error_count != 0) $fatal(1, "Test FAILED with %0d error(s).", error_count);
     $display("\nTest completed! ");
     $finish;
   end
 
   task automatic enqueue(input logic [DATA_WIDTH-1:0] value);
     begin
+      #1;  // sample after this edge's updates land, not the previous cycle's ready
       if (o_write_ready) begin
         i_wrt  = 1;
         i_read = 0;
@@ -213,10 +236,13 @@ module systolic_array_tb;
   // Task to read root node
   task automatic dequeue();
     begin
+      #1;
       if (o_read_ready) begin
         assert (o_data == ref_queue[0])
-        else
+        else begin
+          error_count++;
           $error("Dequeue: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data);
+        end
         i_wrt  = 0;
         i_read = 1;
         ref_queue.rsort();
@@ -232,10 +258,13 @@ module systolic_array_tb;
   // Task to replace root node
   task automatic replace(input logic [DATA_WIDTH-1:0] value);
     begin
+      #1;
       if (o_read_ready) begin
         assert (o_data == ref_queue[0])
-        else
+        else begin
+          error_count++;
           $error("Replace: Node f value mismatch -> expected %d, got %d", ref_queue[0], o_data);
+        end
         i_wrt  = 1;
         i_read = 1;
         i_data = value;
