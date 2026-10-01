@@ -56,5 +56,6 @@ ucli.key
 tb_scripts
 
 sim.dairdir
-simv.daidir
+/simv.daidir
 verdiLog
+

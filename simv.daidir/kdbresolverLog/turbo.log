@@ -1,3 +1,0 @@
-Command Line: /eda/synopsys/vcs/Y-2026.03/linux64/bin/elabcom -simflow -KDBRESOLVER -simvdaidir simv.daidir -saveLevel -enable_vfsXCmp -enable_smXCmp -q -logdir simv.daidir/kdbresolverLog -elabcom_partial_load
-uname(Linux cepool-a05.poly.edu 5.14.0-687.20.1.el9_8.x86_64 #1 SMP PREEMPT_DYNAMIC Sun Jun 28 21:16:58 EDT 2026 x86_64)
-au time 0.070502 0.004600 0.012819 delta 105943040 105943040 total 293167104 293167104

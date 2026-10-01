@@ -1,6 +1,10 @@
 `default_nettype none
 import bram_tree_pkg::*;
 
+// vcs -sverilog -full64 hwpq/hwpq/hybrid_systolic_bram_heap/src/hybrid_typedef.sv hwpq/hwpq/hybrid_systolic_bram_heap/sim/hybrid_systolic_heap_tb.sv hwpq/hwpq/hybrid_systolic_bram_heap/src/rams_tdp_rf_rf.sv hwpq/hwpq/hybrid_systolic_bram_heap/src/bram_tree.sv hwpq/hwpq/hybrid_systolic_bram_heap/src/hybrid_systolic_heap.sv -o simv
+
+// vcs -sverilog -full64 hwpq/hwpq/hybrid_systolic_bram_heap/src/hybrid_typedef.sv hwpq/hwpq/bram_tree/rtl/sim/bram_tree_tb.sv hwpq/hwpq/hybrid_systolic_bram_heap/src/rams_tdp_rf_rf.sv hwpq/hwpq/hybrid_systolic_bram_heap/src/bram_tree.sv 
+
 module systolic_array_tb;
   // Parameters matching the module under test
   parameter int QUEUE_SIZE = SYSTOLIC_QUEUE_SIZE + BRAM_TREE_QUEUE_SIZE*TREE_COUNT;
@@ -181,7 +185,6 @@ module systolic_array_tb;
         i_read = 0;
           timeout_counter += 1;
           if (timeout_counter >= THRESHOLD) begin
-          $display("DEBUG dequeue ref=%0d rd=%0d min=%0d valid=%0d m=%0d h=%0d ob=%0d ib=%0d hob=%0d hib=%0d empty=%b output0=%0d", ref_queue.size(), o_read_ready, uut.min_node, uut.min_valid, uut.m_empt, uut.h_empt, uut.OB[0], uut.IB[0], uut.heap_OB[0], uut.heap_IB[0], uut.heap_empty, uut.heap_output[0]);
           $error("ERROR: TIMEOUT");
           $finish;
         end

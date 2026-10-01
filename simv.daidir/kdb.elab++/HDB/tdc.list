@@ -1,5 +1,0 @@
-hwpq/hybrid_systolic_bram_heap/sim/hybrid_systolic_heap_tb.sv
-hwpq/hybrid_systolic_bram_heap/src/bram_tree.sv
-hwpq/hybrid_systolic_bram_heap/src/hybrid_systolic_heap.sv
-hwpq/hybrid_systolic_bram_heap/src/hybrid_typedef.sv
-hwpq/hybrid_systolic_bram_heap/src/rams_tdp_rf_rf.sv

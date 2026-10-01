@@ -1,7 +1,0 @@
-Command exited with non-zero status 255
-{"vcs1":{"timestamp_begin":1790309996.957518367, "rt":0.98, "ut":0.03, "st":0.03}}
-{"SNPS_VCS_INTERNAL_ROOT_START_TIME": 1790309996.772547950}
-{"VCS_DEPTH": 0}
-{"VCS_COMP_END_TIME": 1790309997.983981692}
-{"vcs1": {"peak_mem": 241688}}
-{"VCS_USER_OPTIONS": "-full64 -sverilog -kdb -lca hwpq/hybrid_systolic_bram_heap/src/"}

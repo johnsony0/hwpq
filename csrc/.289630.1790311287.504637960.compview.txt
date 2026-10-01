@@ -1,9 +1,0 @@
-{"vcs1":{"timestamp_begin":1790311287.671775812, "rt":1.26, "ut":0.16, "st":0.06}}
-{"vcselab":{"timestamp_begin":1790311288.992923822, "rt":0.30, "ut":0.06, "st":0.01}}
-{"link":{"timestamp_begin":1790311289.399234555, "rt":0.13, "ut":0.04, "st":0.04}}
-{"SNPS_VCS_INTERNAL_ROOT_START_TIME": 1790311287.503467775}
-{"VCS_DEPTH": 0}
-{"VCS_COMP_END_TIME": 1790311289.582784646}
-{"vcs1": {"peak_mem": 323332}}
-{"vcselab": {"peak_mem": 197768}}
-{"VCS_USER_OPTIONS": "-full64 -sverilog hwpq/hybrid_systolic_bram_heap/src/hybrid_typedef.sv hwpq/hybrid_systolic_bram_heap/sim/hybrid_systolic_heap_tb.sv hwpq/hybrid_systolic_bram_heap/src/rams_tdp_rf_rf.sv hwpq/hybrid_systolic_bram_heap/src/bram_tree.sv hwpq/hybrid_systolic_bram_heap/src/hybrid_systolic_heap.sv -o /tmp/hwpq_hybrid_simv"}
