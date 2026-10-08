@@ -36,17 +36,17 @@ package bram_tree_pkg;
   // One-hot index of the LARGEST of 6 values. Ties go to the lowest index.
   // (This is the body of the old argmin6_oh, which as written selected the max.)
   function automatic logic [5:0] argmax6_oh(input logic [5:0][DATA_WIDTH-1:0] v);
-    logic [5:0][5:0] ge;     // ge[a][b] (a<b) : v[a] >= v[b]
+    logic [35:0]     ge;     // ge[6*a+b] (a<b) : v[a] >= v[b]; flat for iverilog
     logic [5:0]      win;
     ge = '0;
     for (int a = 0; a < 6; a++)
       for (int b = a+1; b < 6; b++)
-        ge[a][b] = (v[a] >= v[b]);
+        ge[6*a+b] = (v[a] >= v[b]);
     for (int i = 0; i < 6; i++) begin
       win[i] = 1'b1;
       for (int j = 0; j < 6; j++) begin
-        if      (j > i) win[i] = win[i] &  ge[i][j];   // i beats later entries on ties
-        else if (j < i) win[i] = win[i] & ~ge[j][i];   // strictly greater than earlier entries
+        if      (j > i) win[i] = win[i] &  ge[6*i+j];   // i beats later entries on ties
+        else if (j < i) win[i] = win[i] & ~ge[6*j+i];   // strictly greater than earlier entries
       end
     end
     return win;
