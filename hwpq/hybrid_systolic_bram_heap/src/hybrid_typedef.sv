@@ -1,8 +1,19 @@
-package bram_tree_pkg;
-  localparam integer SYSTOLIC_QUEUE_SIZE = 16;
-  localparam integer TREE_COUNT = 11;
+// Sizes default to the synthesis build; a testbench overrides them with +define+ for a small model.
+`ifndef HYBRID_SYSTOLIC_QUEUE_SIZE
+  `define HYBRID_SYSTOLIC_QUEUE_SIZE 16
+`endif
+`ifndef HYBRID_TREE_COUNT
+  `define HYBRID_TREE_COUNT 11
+`endif
+`ifndef HYBRID_BRAM_TREE_QUEUE_SIZE
+  `define HYBRID_BRAM_TREE_QUEUE_SIZE 2047
+`endif
 
-  localparam integer BRAM_TREE_QUEUE_SIZE = 2047;
+package bram_tree_pkg;
+  localparam integer SYSTOLIC_QUEUE_SIZE = `HYBRID_SYSTOLIC_QUEUE_SIZE;
+  localparam integer TREE_COUNT = `HYBRID_TREE_COUNT;
+
+  localparam integer BRAM_TREE_QUEUE_SIZE = `HYBRID_BRAM_TREE_QUEUE_SIZE;
   localparam integer QUEUE_SIZE = 15;
   localparam integer DATA_WIDTH = 16;
   localparam integer TREE_DEPTH    = $clog2(BRAM_TREE_QUEUE_SIZE + 1);
