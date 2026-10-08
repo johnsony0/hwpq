@@ -64,6 +64,17 @@ module bram_tree (
   // best possible priority while rebalancing so the hybrid stalls reads. Mirror of the min-heap's 0.
   logic [DATA_WIDTH-1:0] second_largest, next_second_largest;
 
+  // The BRAM has no reset port; the fill sequencer runs after every reset to
+  // explicitly write the initial values to all nodes.
+  logic                            filling;
+  logic [ADDRESS_WIDTH-1:0]        fill_cnt;
+  logic [$clog2(TREE_DEPTH+1)-1:0] fill_level;
+  logic [ADDRESS_WIDTH+1:0]        fill_bound;
+  logic [ADDRESS_WIDTH-1:0]        fill_cap;
+
+  // fill_cap halves per fill_level, so each depth's nodes get that subtree's capacity.
+  assign fill_cap = ADDRESS_WIDTH'(((NODES_NEEDED + 1) >> fill_level) - 1);
+
   rams_tdp_rf_rf bram_inst (
     .clka (i_CLK), .ena(1'b1), .wea(we_a), .addra(addr_a), .dia(din_a), .doa(dout_a),
     .clkb (i_CLK), .enb(1'b1), .web(we_b), .addrb(addr_b), .dib(din_b), .dob(dout_b)
@@ -85,6 +96,26 @@ module bram_tree (
     end
   end
 
+  // Reset fill sequencer
+  always_ff @(posedge i_CLK or negedge i_RSTn) begin : fill_seq
+    if (!i_RSTn) begin
+      filling    <= 1'b1;
+      fill_cnt   <= '0;
+      fill_level <= '0;
+      fill_bound <= 'd1;
+    end else if (filling) begin
+      if (fill_cnt == ADDRESS_WIDTH'(NODES_NEEDED - 1)) begin
+        filling <= 1'b0;
+      end else begin
+        fill_cnt <= fill_cnt + 1'b1;
+        if ((fill_cnt + 1'b1) == fill_bound[ADDRESS_WIDTH-1:0]) begin
+          fill_level <= fill_level + 1'b1;
+          fill_bound <= (fill_bound << 1) + 'd1;
+        end
+      end
+    end
+  end
+
   always_comb begin : fsm_comb
     next_state       = state;
     next_queue_size  = queue_size;
@@ -102,6 +133,13 @@ module bram_tree (
     child_idx_left  = curr.position * 2 + 1;
     child_idx_right = curr.position * 2 + 2;
 
+    if (filling) begin
+      // Park the walk in IDLE while the sweep rewrites the node memory.
+      next_state = IDLE;
+      addr_a     = fill_cnt;
+      we_a       = 1'b1;
+      din_a      = mem_node(1'b0, EMPTY_VAL, fill_cap);
+    end else begin
     case (state)
       IDLE: begin
         if (i_wrt && !i_read && !o_full) begin // --- ENQUEUE ---
@@ -418,10 +456,12 @@ module bram_tree (
         end
       end
     endcase
+    end
   end
 
   assign o_full  = (queue_size == BRAM_TREE_QUEUE_SIZE);
   assign o_empty = (queue_size == 0);
   assign o_data  = top_level.value;
-  assign o_ready = (state == IDLE) && !(i_read || i_wrt);
+  // Low through the reset fill, so no command reaches a half-rewritten memory.
+  assign o_ready = (state == IDLE) && !filling && !(i_read || i_wrt);
 endmodule
