@@ -232,7 +232,7 @@ module hybrid_systolic_heap (
   logic                    IB_room             [HALF_SIZE-1];
   logic                    heap_IB_room        [HALF_SIZE-1];
   logic [SV_W-1:0]         room_g, room_p, room_v, hroom_g, hroom_p, hroom_v;
-  logic                    user_heap;
+  logic                    user_heap, user_heap_enq;
   logic                    hybrid_empty, rep_empty;
 
   generate
@@ -244,12 +244,13 @@ module hybrid_systolic_heap (
   // A tree head moves into the heap buffer when it has room (pull), or swaps with the
   // heap buffer's head when that buffer is full and the tree head outranks it (evict:
   // a replace on each side). Without the swap a full heap buffer can hide the maximum.
-  assign pull_fire  = !user_heap && max_valid && heap_ready[max_node_idx] && !spill_hits_max
+  assign pull_fire  = !user_heap && !user_heap_enq && max_valid && heap_ready[max_node_idx] && !spill_hits_max
                       && h_wr_rdy;
-  assign evict_fire = !user_heap && max_valid && heap_ready[max_node_idx] && !spill_hits_max
+  assign evict_fire = !user_heap && !user_heap_enq && max_valid && heap_ready[max_node_idx] && !spill_hits_max
                       && heap_systolic_full && h_rd_rdy && (max_node > h_head);
 
-  assign o_write_ready = m_wr_rdy;
+  // Room in either buffer takes a write, so one is accepted in the cycle after any read.
+  assign o_write_ready = m_wr_rdy || h_wr_rdy;
   // The head is the larger buffer head, once both buffers and the trees can be compared.
   assign o_read_ready  = (output_from_heap_systolic ? h_rd_rdy : m_rd_rdy)
                          && (systolic_empty || m_rd_rdy) && (heap_systolic_empty || h_rd_rdy)
@@ -730,20 +731,22 @@ module hybrid_systolic_heap (
     output_from_heap_systolic = (h_head > m_head);
     rd_sel = output_from_heap_systolic ? h_head : m_head;
 
-    // Command routing: enqueue goes to the main buffer; dequeue and replace go to the
-    // buffer holding the head; the heap buffer also takes pulls and evictions.
+    // Command routing: enqueue goes to the main buffer, or to the heap buffer while the main
+    // one is full; dequeue and replace go to the buffer holding the head; the heap buffer
+    // also takes pulls and evictions.
     // Replace on an empty queue inserts through the main buffer. A spill in flight is
     // still an element, so the queue is not empty until the tree has taken it.
     hybrid_empty = systolic_empty && heap_systolic_empty && (&heap_empty) && !(|heap_write);
-    rep_empty = i_wrt && i_read && hybrid_empty && o_write_ready;
+    rep_empty = i_wrt && i_read && hybrid_empty && m_wr_rdy;
     user_heap = i_read && o_read_ready && output_from_heap_systolic;
-    m_wrt  = (i_wrt && !i_read && o_write_ready)
+    user_heap_enq = i_wrt && !i_read && !m_wr_rdy && h_wr_rdy;
+    m_wrt  = (i_wrt && !i_read && m_wr_rdy)
              || (i_wrt && i_read && (o_read_ready || rep_empty) && !output_from_heap_systolic);
     m_read = i_read && (o_read_ready || rep_empty) && !output_from_heap_systolic;
     m_data = i_data;
-    h_wrt  = (user_heap && i_wrt) || pull_fire || evict_fire;
+    h_wrt  = (user_heap && i_wrt) || user_heap_enq || pull_fire || evict_fire;
     h_read = user_heap || evict_fire;
-    h_data = user_heap ? i_data : max_node;
+    h_data = (user_heap || user_heap_enq) ? i_data : max_node;
 
     // Main buffer: command-dependent terms.
     m_enq_ok      = m_wrt && !m_read && !systolic_full && m_wr_rdy;
