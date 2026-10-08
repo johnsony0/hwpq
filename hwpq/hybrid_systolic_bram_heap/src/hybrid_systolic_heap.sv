@@ -233,6 +233,7 @@ module hybrid_systolic_heap (
   logic                    heap_IB_room        [HALF_SIZE-1];
   logic [SV_W-1:0]         room_g, room_p, room_v, hroom_g, hroom_p, hroom_v;
   logic                    user_heap;
+  logic                    hybrid_empty, rep_empty;
 
   generate
     for (genvar k = 0; k < TREE_COUNT; k++) begin : g_heap_in
@@ -731,9 +732,14 @@ module hybrid_systolic_heap (
 
     // Command routing: enqueue goes to the main buffer; dequeue and replace go to the
     // buffer holding the head; the heap buffer also takes pulls and evictions.
+    // Replace on an empty queue inserts through the main buffer. A spill in flight is
+    // still an element, so the queue is not empty until the tree has taken it.
+    hybrid_empty = systolic_empty && heap_systolic_empty && (&heap_empty) && !(|heap_write);
+    rep_empty = i_wrt && i_read && hybrid_empty && o_write_ready;
     user_heap = i_read && o_read_ready && output_from_heap_systolic;
-    m_wrt  = (i_wrt && !i_read && o_write_ready) || (i_wrt && i_read && o_read_ready && !output_from_heap_systolic);
-    m_read = i_read && o_read_ready && !output_from_heap_systolic;
+    m_wrt  = (i_wrt && !i_read && o_write_ready)
+             || (i_wrt && i_read && (o_read_ready || rep_empty) && !output_from_heap_systolic);
+    m_read = i_read && (o_read_ready || rep_empty) && !output_from_heap_systolic;
     m_data = i_data;
     h_wrt  = (user_heap && i_wrt) || pull_fire || evict_fire;
     h_read = user_heap || evict_fire;
