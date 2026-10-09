@@ -259,7 +259,7 @@ module hybrid_systolic_heap (
   logic [5:0][DATA_WIDTH-1:0] head_v;
   always_comb begin
     head_v  = {heap_OB[1], heap_IB[0], IB[0], OB[1], OB[0], heap_OB[0]};
-    o_max_value = oh6_select(head_v, argmax6_oh(head_v));
+    o_max_value = bram_tree_pkg::oh6_select(head_v, bram_tree_pkg::argmax6_oh(head_v));
   end
 
   always_ff @(posedge i_CLK) begin
